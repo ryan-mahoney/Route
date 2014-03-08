@@ -3,6 +3,8 @@ Route
 
 Service wrapper for FastRoute providing a more slim-like interface.
 
+[![Build Status](https://travis-ci.org/Opine-Org/Route.png?branch=master)](https://travis-ci.org/Opine-Org/Route)
+
 ## Background
 
 I love [Slim Framework](http://www.slimframework.com), but it is not as slim (or fast) as I'd like it to be.
