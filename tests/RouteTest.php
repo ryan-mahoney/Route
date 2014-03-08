@@ -74,4 +74,11 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $response = $this->route->run('GET', '/');
         $this->assertTrue($response === 'Home');
     }
+
+    public function testRouteAndReRoute () {
+        $response = $this->route->run('GET', '/');
+        $this->assertTrue($response === 'Home');
+        $response = $this->route->run('GET', '/about');
+        $this->assertTrue($response === 'About');
+    }
 }
