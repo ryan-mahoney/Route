@@ -18,6 +18,8 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
             echo 'About';
         })->get('/blog', function () {
             echo 'Blog';
+        })->get('/hello/{name}', function ($name) {
+            echo $name;
         })->post('/form', function () {
             echo 'Received';
         });
@@ -32,6 +34,11 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
     public function testRouteGetSecondMatch () {
         $response = $this->route->run('GET', '/blog');
         $this->assertTrue($response === 'Blog');
+    }
+
+    public function testRouteGetMatchParamater () {
+        $response = $this->route->run('GET', '/hello/Ryan');
+        $this->assertTrue($response === 'Ryan');
     }
 
     public function testRoutePostMatch () {

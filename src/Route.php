@@ -95,7 +95,7 @@ class Route {
 		        foreach ($this->before as $before) {
 		        	$before();
 		        }
-		        $route[1]($route[2]);
+		        call_user_func_array($route[1], $route[2]);
 		        foreach ($this->after as $after) {
 		        	$after();
 		        }
