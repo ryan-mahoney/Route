@@ -19,11 +19,13 @@ Add to your composer:
 composer.json
 ```json
 {
-"opine/route": "dev-master"
+    "require": {
+        "opine/route": "dev-master"
+    }
 }
-
-composer install
 ```
+> composer install
+
 
 ## With Dependency Injection
 container.yml
@@ -41,8 +43,7 @@ services:
         class:     'FastRoute\DataGenerator\GroupCountBased'
 ```
 
-your front controller, etc:
-
+index.php
 ```php
 $route = $container->route;
 $route->get('/', function () {
@@ -59,7 +60,7 @@ echo $route->run('GET', '/');
 ```
 
 ## Without Dependency Injection
-
+index.php
 ```php
 use Opine;
 use FastRoute;
