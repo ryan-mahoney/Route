@@ -15,6 +15,7 @@ So, here is a wrapper for FastRoute which is super fast and light weight, with a
 
 ## With Dependency Injection
 > index.php
+
 ```php
 $route = $container->route;
 $route->get('/', function () {
@@ -31,6 +32,7 @@ echo $route->run('GET', '/');
 ```
 
 > container.yml
+
 ```yaml
 services:
     route:
@@ -47,6 +49,7 @@ services:
 
 ## Without Dependency Injection
 > index.php
+
 ```php
 use Opine;
 use FastRoute;
@@ -77,6 +80,7 @@ echo $route->run('GET', '/');
 
 ## Installation
 > edit composer.json
+
 ```json
 {
     "require": {
@@ -84,4 +88,5 @@ echo $route->run('GET', '/');
     }
 }
 ```
+
 > composer install
