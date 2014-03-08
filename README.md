@@ -5,13 +5,11 @@ Service wrapper for FastRoute providing a more slim-like interface.
 
 ## Background
 
-I love [Slim Framework](http://www.slimframework.com) .  I definitely learned a lot from it and have got a lot of mileage out of it.  That being said, I did eventually think that Slim was not really that slim (that it is actually somewhat bloated) and I was surprised on a recent project with a large budget for performance testing that it was faster.
+I love [Slim Framework](http://www.slimframework.com), but it is not as slim (or fast) as I'd like it to be.
 
-Also, I needed Slim to allow for multiple routes to be called in one php-run when I consume my own RESTful APIs... and it seems not to work out of the box and be difficult to implement.
+[FastRoute](https://github.com/nikic/FastRoute), is exactly what I need in a router, but I prefer the Slim API.
 
-I got super excited about the [FastRoute](https://github.com/nikic/FastRoute), but then I longed for the elegant interface of Slim.
-
-So, here is a wrapper for FastRoute which is super fast and light weight, with a more Slim-like interface.
+Opine\Route is a service wrapper for FastRoute which with a more Slim-like interface.  So here is the fastest router with the most popular API.  Enjoy!
 
 ## With Dependency Injection
 > index.php
