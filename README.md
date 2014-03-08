@@ -13,37 +13,8 @@ I got super excited about the [FastRoute](https://github.com/nikic/FastRoute), b
 
 So, here is a wrapper for FastRoute which is super fast and light weight, with a more Slim-like interface.
 
-## Usage
-Add to your composer:
-
-composer.json
-```json
-{
-    "require": {
-        "opine/route": "dev-master"
-    }
-}
-```
-> composer install
-
-
 ## With Dependency Injection
-container.yml
-```yaml
-services:
-    route:
-        class:     'Opine\Route'
-        arguments: ['@fastrouteCollector']
-    fastrouteCollector:
-        class:     'FastRoute\RouteCollector'
-        arguments: ['@fastrouteParser', '@fastrouteGenerator']
-    fastrouteParser:
-        class:     'FastRoute\RouteParser\Std'
-    fastrouteGenerator:
-        class:     'FastRoute\DataGenerator\GroupCountBased'
-```
-
-index.php
+> index.php
 ```php
 $route = $container->route;
 $route->get('/', function () {
@@ -59,12 +30,27 @@ $route->get('/', function () {
 echo $route->run('GET', '/');
 ```
 
+> container.yml
+```yaml
+services:
+    route:
+        class:     'Opine\Route'
+        arguments: ['@fastrouteCollector']
+    fastrouteCollector:
+        class:     'FastRoute\RouteCollector'
+        arguments: ['@fastrouteParser', '@fastrouteGenerator']
+    fastrouteParser:
+        class:     'FastRoute\RouteParser\Std'
+    fastrouteGenerator:
+        class:     'FastRoute\DataGenerator\GroupCountBased'
+```
+
 ## Without Dependency Injection
-index.php
+> index.php
 ```php
 use Opine;
 use FastRoute;
-$route = new Route(new RouteCollector(new RouteParser\Std(), new DataGenerator\GroupCountBased));
+$route = new Route(new RouteCollector(new RouteParser\Std(), new DataGenerator\GroupCountBased()));
 $route->get('/', function () {
     echo 'Home';
 })->get('/about', function () {
@@ -77,8 +63,8 @@ $route->get('/', function () {
 }
 echo $route->run('GET', '/');
 ```
-## Currently, the following methods are defined:
 
+## Currently, the following methods are defined:
 - before: add a before filter
 - after: add an after filter
 - purgeAfter*: get rid of after filters
@@ -89,3 +75,13 @@ echo $route->run('GET', '/');
 
 "*" denotes methods not present in Slim.
 
+## Installation
+> edit composer.json
+```json
+{
+    "require": {
+        "opine/route": "dev-master"
+    }
+}
+```
+> composer install
