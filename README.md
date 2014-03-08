@@ -18,6 +18,7 @@ So, here is a wrapper for FastRoute which is super fast and light weight, with a
 
 ```php
 $route = $container->route;
+
 $route->get('/', function () {
     echo 'Home';
 })->get('/about', function () {
@@ -27,7 +28,7 @@ $route->get('/', function () {
 })->post('/form', function () {
     echo 'Received';
 });
-}
+
 echo $route->run('GET', '/');
 ```
 
@@ -53,7 +54,9 @@ services:
 ```php
 use Opine;
 use FastRoute;
+
 $route = new Route(new RouteCollector(new RouteParser\Std(), new DataGenerator\GroupCountBased()));
+
 $route->get('/', function () {
     echo 'Home';
 })->get('/about', function () {
@@ -63,7 +66,7 @@ $route->get('/', function () {
 })->post('/form', function () {
     echo 'Received';
 });
-}
+
 echo $route->run('GET', '/');
 ```
 
