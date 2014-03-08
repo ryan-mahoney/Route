@@ -71,15 +71,13 @@ echo $route->run('GET', '/');
 ```
 
 ## Currently, the following methods are defined:
-- before: add a before filter
-- after: add an after filter
-- purgeAfter*: get rid of after filters
-- purgeBefore*: get rid of before filters
-- get: add a pattern/callback to route for get method
-- post: add a pattern/callback to route for post method
-- run: dispatch against current URI or supply one
-
-"*" denotes methods not present in Slim.
+- **before**: add a before filter
+- **after**: add an after filter
+- **purgeAfter**: get rid of after filters
+- **purgeBefore**: get rid of before filters
+- **get**: add a pattern/callback to route for get method
+- **post**: add a pattern/callback to route for post method
+- **run**: dispatch against current URI or supply one
 
 ## Installation
 > edit composer.json
