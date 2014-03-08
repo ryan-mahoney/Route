@@ -1,0 +1,25 @@
+{
+    "name": "opine/route",
+    "type": "library",
+    "minimum-stability": "dev",
+    "description": "Service wrapper for FastRoute providing a more slim-like interface",
+    "keywords": ["routing", "FastRoute", "Opine"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ryan Mahoney",
+            "email": "ryan@virtuecenter.com",
+            "homepage": "http://opine-php.org",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "phpunit/phpunit": "3.7.32",
+        "opine/container": "dev-master",
+        "nikic/fast-route": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {"Opine\\": "src/"}
+    }
+}
