@@ -89,3 +89,8 @@ echo $route->run('GET', '/');
 ```
 
 > composer install
+
+
+## Author
+
+Ryan Mahoney can be reached at ryan@virtuecenter.com or @vcryan on Twitter.
