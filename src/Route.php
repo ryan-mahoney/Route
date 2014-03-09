@@ -63,6 +63,21 @@ class Route {
         return $this;
     }
 
+    public function delete ($pattern, callable $callback) {
+        $this->method('DELETE', $pattern, $callback);
+        return $this;
+    }
+
+    public function patch ($pattern, callable $callback) {
+        $this->method('PATCH', $pattern, $callback);
+        return $this;
+    }
+
+    public function put ($pattern, callable $callback) {
+        $this->method('PUT', $pattern, $callback);
+        return $this;
+    }
+
     private function method ($method, $pattern, callable $callback) {
         $this->collector->addRoute($method, $pattern, $callback);
     }
@@ -72,9 +87,9 @@ class Route {
             $method = $_SERVER['REQUEST_METHOD'];
         }
         if ($uri === false) {
-            $uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
-            if (substr_count($uri, '/') > 0) {
-                $uri = explode('/', trim($uri, '/'))[0];
+            $uri = $_SERVER['REQUEST_URI'];
+            if (substr_count($uri, '?') > 0) {
+                $uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $uri);
             }
         }
         $dispatcher = new \FastRoute\Dispatcher\GroupCountBased($this->collector->getData());
@@ -101,5 +116,42 @@ class Route {
                 }
                 return ob_get_clean();
         }
+    }
+
+    public function hook ($name, callable $callback) {
+        switch ($name) {
+            case 'slim.before':
+                //This hook is invoked before the Slim application is run and before output buffering is turned on. This hook is invoked once during the Slim application lifecycle.
+                break;
+
+            case 'slim.before.router':
+                //This hook is invoked after output buffering is turned on and before the router is dispatched. This hook is invoked once during the Slim application lifecycle.
+                break;
+
+            case 'slim.before.dispatch':
+                $this->before($callback);
+                //This hook is invoked before the current matching route is dispatched. Usually this hook is invoked only once during the Slim application lifecycle; however, this hook may be invoked multiple times if a matching route chooses to pass to a subsequent matching route.
+                break;
+
+            case 'slim.after.dispatch':
+                $this->after($callback);
+                //This hook is invoked after the current matching route is dispatched. Usually this hook is invoked only once during the Slim application lifecycle; however, this hook may be invoked multiple times if a matching route chooses to pass to a subsequent matching route.
+                break;
+
+            case 'slim.after.router':
+                //This hook is invoked after the router is dispatched, before the Response is sent to the client, and after output buffering is turned off. This hook is invoked once during the Slim application lifecycle.
+                break;
+
+            case 'slim.after':
+                break;
+
+            default:
+                throw new \Exception('hook: ' . $name . ' not implemented');
+        }
+    }
+
+    public function name () {
+        //still thinking about this one
+        return $this;
     }
 }

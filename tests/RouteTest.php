@@ -88,4 +88,8 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $response = $this->route->run('GET', '/about');
         $this->assertTrue($response === 'About');
     }
+
+    public function testRoutesConverted () {
+        
+    }
 }
