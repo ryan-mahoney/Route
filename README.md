@@ -75,12 +75,15 @@ echo $route->run('GET', '/');
 ```
 
 ## Currently, the following methods are defined:
+- **get**: add a pattern/callback to route for get method
+- **post**: add a pattern/callback to route for post method
+- **put**: add a pattern/callback to route for put method
+- **delete**: add a pattern/callback to route for delete method
+- **patch**: add a pattern/callback to route for patch method
 - **before**: add a before filter
 - **after**: add an after filter
 - **purgeAfter**: get rid of after filters
 - **purgeBefore**: get rid of before filters
-- **get**: add a pattern/callback to route for get method
-- **post**: add a pattern/callback to route for post method
 - **run**: dispatch against current URI or supply one
 
 ## Installation
