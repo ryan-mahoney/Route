@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  */
 namespace Opine;
+use FastRoute\Dispatcher\GroupCountBased;
 
 class Route {
     private $collector;
     private $before = [];
     private $after = [];
+    private $dispatcher = false;
 
     public function __construct ($collector) {
         $this->collector = $collector;
@@ -82,6 +84,13 @@ class Route {
         $this->collector->addRoute($method, $pattern, $callback);
     }
 
+    private function dispatcher () {
+        if ($this->dispatcher === false) {
+            $this->dispatcher = new GroupCountBased($this->collector->getData());
+        }
+        return $this->dispatcher;
+    }
+
     public function run ($method=false, $uri=false, &$header=false) {
         if ($method === false) {
             $method = $_SERVER['REQUEST_METHOD'];
@@ -92,7 +101,7 @@ class Route {
                 $uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $uri);
             }
         }
-        $dispatcher = new \FastRoute\Dispatcher\GroupCountBased($this->collector->getData());
+        $dispatcher = $this->dispatcher();
         $route = $dispatcher->dispatch($method, $uri);
         switch ($route[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
