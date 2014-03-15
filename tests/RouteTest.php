@@ -22,7 +22,18 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
             echo $name;
         })->post('/form', function () {
             echo 'Received';
+        })->get('/outer', function () {
+            echo 'Outer';
+            echo $this->route->run('GET', '/inner');
+        })->get('/inner', function () {
+            echo 'Inner';
         });
+        $callback = function () {
+            echo 'OK';
+        };
+        for ($i=0; $i < 1000; $i++) {
+            $this->route->get('/{' . uniqid() . '}/{' . uniqid() . '}/{' . uniqid() . '}', $callback);
+        }
     }
 
     public function testRouteGetFirstMatch () {
@@ -89,7 +100,8 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($response === 'About');
     }
 
-    public function testRoutesConverted () {
-        
+    public function testRouteWithinRoute () {
+        $response = $this->route->run('GET', '/outer');
+        $this->assertTrue($response === 'OuterInner');   
     }
 }
