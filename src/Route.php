@@ -92,6 +92,9 @@ class Route {
     }
 
     public function run ($method=false, $uri=false, &$header=false) {
+        $originalGet = $_GET;
+        $getModified = false;
+        $debug = false;
         if ($method === false) {
             $method = $_SERVER['REQUEST_METHOD'];
         }
@@ -100,18 +103,25 @@ class Route {
             if (substr_count($uri, '?') > 0) {
                 $uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $uri);
             }
+        } else {
+            if (substr_count($uri, '?') > 0) {
+                $parts = explode('?', $uri, 2);
+                parse_str($parts[1], $_GET);
+                $uri = $parts[0];
+                $getModified = true;
+            }
         }
         $dispatcher = $this->dispatcher();
         $route = $dispatcher->dispatch($method, $uri);
         switch ($route[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
                 $header = 404;
-                return false;
+                $return = false;
 
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $route[1];
                 $header = 405;
-                return false;
+                $return = false;
 
             case \FastRoute\Dispatcher::FOUND:
                 $header =  200;
@@ -123,8 +133,12 @@ class Route {
                 foreach ($this->after as $after) {
                     $after();
                 }
-                return ob_get_clean();
+                $return = ob_get_clean();
         }
+        if ($getModified) {
+            $_GET = $originalGet;
+        }
+        return $return;
     }
 
     public function hook ($name, callable $callback) {
