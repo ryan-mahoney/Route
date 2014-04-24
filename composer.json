@@ -20,7 +20,7 @@
     "require": {
         "php": ">=5.4.0",
         "phpunit\/phpunit": "3.7.32",
-        "opine\/container": "1.0.1",
+        "opine\/container": "dev-master",
         "nikic\/fast-route": "dev-master"
     },
     "autoload": {
