@@ -6,7 +6,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
 
     public function setup () {
         date_default_timezone_set('UTC');
-        $root = getcwd();
+        $root = __DIR__;
         $container = new Container($root, $root . '/container.yml');
         $this->route = $container->route;
     }
