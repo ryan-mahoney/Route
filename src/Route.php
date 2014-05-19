@@ -117,11 +117,12 @@ class Route {
             case \FastRoute\Dispatcher::NOT_FOUND:
                 $header = 404;
                 $return = false;
+                break;
 
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $route[1];
                 $header = 405;
                 $return = false;
+                break;
 
             case \FastRoute\Dispatcher::FOUND:
                 $header =  200;
@@ -134,6 +135,7 @@ class Route {
                     $after();
                 }
                 $return = ob_get_clean();
+                break;
         }
         if ($getModified) {
             $_GET = $originalGet;
