@@ -6,12 +6,16 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
 
     public function setup () {
         date_default_timezone_set('UTC');
-        $root = __DIR__;
-        $container = new Container($root, $root . '/container.yml');
+        $root = __DIR__ . '/../public';
+        $container = new Container($root, $root . '/../container.yml');
         $this->route = $container->route;
     }
 
     private function initializeRoutes () {
+        $this->route->get('/sample', '\Opine\RouteTest@sampleOutput');
+        $this->route->get('/sample/{input}', '\Opine\RouteTest@sampleOutput2');
+        $this->route->cacheSet();
+/*
         $this->route->get('/', function () {
             echo 'Home';
         })->get('/about', function () {
@@ -31,11 +35,12 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $callback = function () {
             echo 'OK';
         };
-        for ($i=0; $i < 1000; $i++) {
+        for ($i=0; $i < 1; $i++) {
             $this->route->get('/{' . uniqid() . '}/{' . uniqid() . '}/{' . uniqid() . '}', $callback);
         }
+*/
     }
-
+/*
     public function testRouteGetFirstMatch () {
         $this->initializeRoutes();
         $response = $this->route->run('GET', '/');
@@ -103,5 +108,25 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
     public function testRouteWithinRoute () {
         $response = $this->route->run('GET', '/outer');
         $this->assertTrue($response === 'OuterInner');   
+    }
+*/
+
+    public function testRouteWithStringController () {
+        $this->initializeRoutes();
+        $response = $this->route->run('GET', '/sample', $header);
+        $this->assertTrue($response == 'SAMPLE' && $header == 200);
+    }
+
+    public function testRouteWithStringWithVarPathController () {
+        $response = $this->route->run('GET', '/sample/abc', $header);
+        $this->assertTrue($response == 'SAMPLEabc' && $header == 200);
+    }
+
+    public function sampleOutput () {
+        echo 'SAMPLE';
+    }
+
+    public function sampleOutput2 ($data) {
+        echo 'SAMPLE' . $data;
     }
 }

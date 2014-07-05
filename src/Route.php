@@ -24,23 +24,30 @@
  */
 namespace Opine;
 use FastRoute\Dispatcher\GroupCountBased;
+use Exception;
 
 class Route {
     private $collector;
     private $before = [];
     private $after = [];
     private $dispatcher = false;
+    private $root;
+    private $cache = false;
+    private $container;
 
-    public function __construct ($collector) {
+    public function __construct ($root, $collector) {
+        $this->root = $root;
+        $this->cachePath = $this->root . '/../cache/routes.php';
         $this->collector = $collector;
+        $this->container = container();
     }
 
-    public function before (callable $callback) {
+    public function before ($callback) {
         $this->before[] = $callback;
         return $this;
     }
 
-    public function after (callable $callback) {
+    public function after ($callback) {
         $this->after[] = $callback;
         return $this;
     }
@@ -55,38 +62,49 @@ class Route {
         return $this;
     }
 
-    public function get ($pattern, callable $callback) {
+    public function get ($pattern, $callback) {
         $this->method('GET', $pattern, $callback);
         return $this;
     }
 
-    public function post ($pattern, callable $callback) {
+    public function post ($pattern, $callback) {
         $this->method('POST', $pattern, $callback);
         return $this;
     }
 
-    public function delete ($pattern, callable $callback) {
+    public function delete ($pattern, $callback) {
         $this->method('DELETE', $pattern, $callback);
         return $this;
     }
 
-    public function patch ($pattern, callable $callback) {
+    public function patch ($pattern, $callback) {
         $this->method('PATCH', $pattern, $callback);
         return $this;
     }
 
-    public function put ($pattern, callable $callback) {
+    public function put ($pattern, $callback) {
         $this->method('PUT', $pattern, $callback);
         return $this;
     }
 
-    private function method ($method, $pattern, callable $callback) {
+    private function method ($method, $pattern, $callback) {
+        if (is_string($callback)) {
+            if (substr_count($callback, '@') == 1) {
+                $callback = explode('@', $callback);
+            } else {
+                throw new RouteException('Invalid callback: ' . $callback);
+            }
+        }
         $this->collector->addRoute($method, $pattern, $callback);
     }
 
     private function dispatcher () {
         if ($this->dispatcher === false) {
-            $this->dispatcher = new GroupCountBased($this->collector->getData());
+            if (is_array($this->cache) == true) {
+                $this->dispatcher = new GroupCountBased($this->cache);
+            } else {
+                $this->dispatcher = new GroupCountBased($this->collector->getData());
+            }
         }
         return $this->dispatcher;
     }
@@ -130,6 +148,12 @@ class Route {
                 foreach ($this->before as $before) {
                     $before();
                 }
+                if (is_array($route[1])) {
+                    $service = $this->container->{$route[1][0]};
+                    if (is_object($service)) {
+                        $route[1][0] = $service;
+                    }
+                }
                 call_user_func_array($route[1], $route[2]);
                 foreach ($this->after as $after) {
                     $after();
@@ -143,7 +167,7 @@ class Route {
         return $return;
     }
 
-    public function hook ($name, callable $callback) {
+    public function hook ($name, $callback) {
         switch ($name) {
             case 'slim.before':
                 //This hook is invoked before the Slim application is run and before output buffering is turned on. This hook is invoked once during the Slim application lifecycle.
@@ -175,8 +199,21 @@ class Route {
         }
     }
 
-    public function name () {
-        //still thinking about this one
-        return $this;
+    public function getData () {
+        return $this->collector->getData();
+    }
+
+    public function cacheSet ($data) {
+        $this->cache = $data;
+    }
+
+    public function cacheGenerate () {
+        file_put_contents(
+            $this->cachePath,
+            '<?php return ' . var_export($this->collector->getData(), true) . ';'
+        );
+        return $this->collector->getData();
     }
 }
+
+class RouteException extends Exception {}
