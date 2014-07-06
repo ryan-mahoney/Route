@@ -43,11 +43,15 @@ class Route {
     }
 
     public function before ($callback) {
+        $this->stringToCallback($callback);
+        $this->arrayToService($callback);
         $this->before[] = $callback;
         return $this;
     }
 
     public function after ($callback) {
+        $this->stringToCallback($callback);
+        $this->arrayToService($callback);
         $this->after[] = $callback;
         return $this;
     }
@@ -87,14 +91,29 @@ class Route {
         return $this;
     }
 
-    private function method ($method, $pattern, $callback) {
-        if (is_string($callback)) {
-            if (substr_count($callback, '@') == 1) {
-                $callback = explode('@', $callback);
-            } else {
-                throw new RouteException('Invalid callback: ' . $callback);
-            }
+    private function stringToCallback (&$callback) {
+        if (!is_string($callback)) {
+            return;
         }
+        if (substr_count($callback, '@') == 1) {
+            $callback = explode('@', $callback);
+        } else {
+            throw new RouteException('Invalid callback: ' . $callback);
+        }
+    }
+
+    private function arrayToService (&$callback) {
+        if (!is_array($callback)) {
+            return;
+        }
+        $service = $this->container->{$callback[0]};
+        if (is_object($service)) {
+            $callback[0] = $service;
+        }
+    }
+
+    private function method ($method, $pattern, $callback) {
+        $this->stringToCallback($callback);
         $this->collector->addRoute($method, $pattern, $callback);
     }
 
@@ -148,12 +167,7 @@ class Route {
                 foreach ($this->before as $before) {
                     $before();
                 }
-                if (is_array($route[1])) {
-                    $service = $this->container->{$route[1][0]};
-                    if (is_object($service)) {
-                        $route[1][0] = $service;
-                    }
-                }
+                $this->arrayToService($route[1]);
                 call_user_func_array($route[1], $route[2]);
                 foreach ($this->after as $after) {
                     $after();
@@ -165,38 +179,6 @@ class Route {
             $_GET = $originalGet;
         }
         return $return;
-    }
-
-    public function hook ($name, $callback) {
-        switch ($name) {
-            case 'slim.before':
-                //This hook is invoked before the Slim application is run and before output buffering is turned on. This hook is invoked once during the Slim application lifecycle.
-                break;
-
-            case 'slim.before.router':
-                //This hook is invoked after output buffering is turned on and before the router is dispatched. This hook is invoked once during the Slim application lifecycle.
-                break;
-
-            case 'slim.before.dispatch':
-                $this->before($callback);
-                //This hook is invoked before the current matching route is dispatched. Usually this hook is invoked only once during the Slim application lifecycle; however, this hook may be invoked multiple times if a matching route chooses to pass to a subsequent matching route.
-                break;
-
-            case 'slim.after.dispatch':
-                $this->after($callback);
-                //This hook is invoked after the current matching route is dispatched. Usually this hook is invoked only once during the Slim application lifecycle; however, this hook may be invoked multiple times if a matching route chooses to pass to a subsequent matching route.
-                break;
-
-            case 'slim.after.router':
-                //This hook is invoked after the router is dispatched, before the Response is sent to the client, and after output buffering is turned off. This hook is invoked once during the Slim application lifecycle.
-                break;
-
-            case 'slim.after':
-                break;
-
-            default:
-                throw new \Exception('hook: ' . $name . ' not implemented');
-        }
     }
 
     public function getData () {
