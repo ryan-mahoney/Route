@@ -266,6 +266,9 @@ class Route {
                 $header =  200;
                 ob_start();
                 foreach ($this->before as $before) {
+                    if (!is_object($before[0])) {
+                        $before[0] = new $before[0]();
+                    }
                     $before($route[2]);
                 }
                 $this->arrayToService($route[1]);
@@ -274,6 +277,9 @@ class Route {
                 }
                 call_user_func_array($route[1], $route[2]);
                 foreach ($this->after as $after) {
+                    if (!is_object($after[0])) {
+                        $after[0] = new $after[0]();
+                    }
                     $after($route[2]);
                 }
                 $return = ob_get_clean();
