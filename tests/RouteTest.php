@@ -13,8 +13,32 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
 
     private function initializeRoutes () {
         $this->route->get('/sample', '\Opine\RouteTest@sampleOutput');
-        $this->route->get('/sample/{input}', '\Opine\RouteTest@sampleOutput2');
-        $this->route->cacheSet();
+        $this->route->get('/api', [
+            '/add' => '\Opine\RouteTest@sampleOutput',
+            '/edit' => '\Opine\RouteTest@sampleOutput',
+            '/list' => '\Opine\RouteTest@sampleOutput',
+            '/upload' => [
+                '' => '\Opine\RouteTest@sampleOutput',
+                '/file' => '\Opine\RouteTest@sampleOutput',
+                '/file/{name}' => '\Opine\RouteTest@sampleOutput2'
+            ]
+        ]);
+        $this->route->get(
+            '\Opine\RouteTest@beforeFilter', 
+            '/api2', [
+                '/add' => '\Opine\RouteTest@sampleOutput',
+                '/edit' => '\Opine\RouteTest@sampleOutput',
+                '/list' => '\Opine\RouteTest@sampleOutput',
+                '/upload' => [
+                    '' => '\Opine\RouteTest@sampleOutput',
+                    '/file' => '\Opine\RouteTest@sampleOutput',
+                    '/file/{name}' => '\Opine\RouteTest@sampleOutput2'
+                ]
+            ],
+            '\Opine\RouteTest@afterFilter'
+        );
+        //$this->route->get('/sample/{input}', '\Opine\RouteTest@sampleOutput2');
+        //$this->route->cacheSet();
 /*
         $this->route->get('/', function () {
             echo 'Home';
@@ -117,16 +141,35 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($response == 'SAMPLE' && $header == 200);
     }
 
+    public function testRouteWithGroup () {
+        $response = $this->route->run('GET', '/api/upload/file/xyz', $header);
+        $this->assertTrue($response == 'SAMPLExyz' && $header == 200);
+    }
+
+    public function testRouteWithGroupFilters () {
+        $response = $this->route->run('GET', '/api2/upload/file/xyz', $header);
+        $this->assertTrue($response == 'STARTSAMPLExyzEND' && $header == 200);
+    }
+
+/*
     public function testRouteWithStringWithVarPathController () {
         $response = $this->route->run('GET', '/sample/abc', $header);
         $this->assertTrue($response == 'SAMPLEabc' && $header == 200);
     }
-
+*/
     public function sampleOutput () {
         echo 'SAMPLE';
     }
 
     public function sampleOutput2 ($data) {
         echo 'SAMPLE' . $data;
+    }
+
+    public function beforeFilter () {
+        echo 'START';
+    }
+
+    public function afterFilter () {
+        echo 'END';
     }
 }

@@ -3,7 +3,7 @@ services:
         class:     'Symfony\Component\Yaml\Yaml'
     route:
         class:     'Opine\Route'
-        arguments: ['%root%', '@fastrouteCollector']
+        arguments: ['%root%', '@fastrouteCollector', '@container']
     fastrouteCollector:
         class:     'FastRoute\RouteCollector'
         arguments: ['@fastrouteParser', '@fastrouteGenerator']
