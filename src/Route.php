@@ -269,6 +269,9 @@ class Route {
                     $before($route[2]);
                 }
                 $this->arrayToService($route[1]);
+                if (!is_object($route[1][0])) {
+                    $route[1][0] = new $route[1][0]();
+                }
                 call_user_func_array($route[1], $route[2]);
                 foreach ($this->after as $after) {
                     $after($route[2]);
