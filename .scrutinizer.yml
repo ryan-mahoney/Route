@@ -1,4 +1,5 @@
 tools:
     external_code_coverage: true
+checks:
     code_rating: true
     duplication: true
