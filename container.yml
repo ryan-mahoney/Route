@@ -11,3 +11,10 @@ services:
         class:     'FastRoute\RouteParser\Std'
     fastrouteGenerator:
         class:     'FastRoute\DataGenerator\GroupCountBased'
+    controller:
+        class:     'Controller'
+        arguments: ['@redirect']
+    redirect:
+        class:     'Opine\Redirect'
+        arguments: ['@route']
+        scope:     'prototype'

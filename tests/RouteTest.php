@@ -12,32 +12,43 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
     }
 
     private function initializeRoutes () {
-        $this->route->get('/sample', '\Opine\RouteTest@sampleOutput');
+        $this->route->get('/sample', 'controller@sampleOutput');
+        
         $this->route->get('/api', [
-            '/add' => '\Opine\RouteTest@sampleOutput',
-            '/edit' => '\Opine\RouteTest@sampleOutput',
-            '/list' => '\Opine\RouteTest@sampleOutput',
+            '/add' => 'controller@sampleOutput',
+            '/edit' => 'controller@sampleOutput',
+            '/list' => 'controller@sampleOutput',
             '/upload' => [
-                '' => '\Opine\RouteTest@sampleOutput',
-                '/file' => '\Opine\RouteTest@sampleOutput',
-                '/file/{name}' => '\Opine\RouteTest@sampleOutput2'
+                '' => 'controller@sampleOutput',
+                '/file' => 'controller@sampleOutput',
+                '/file/{name}' => 'controller@sampleOutput2'
             ]
         ]);
+        
         $this->route->get(
-            '\Opine\RouteTest@beforeFilter', 
+            'controller@beforeFilter', 
             '/api2', [
-                '/add' => '\Opine\RouteTest@sampleOutput',
-                '/edit' => '\Opine\RouteTest@sampleOutput',
-                '/list' => '\Opine\RouteTest@sampleOutput',
+                '/add' => 'controller@sampleOutput',
+                '/edit' => 'controller@sampleOutput',
+                '/list' => 'controller@sampleOutput',
                 '/upload' => [
-                    '' => '\Opine\RouteTest@sampleOutput',
-                    '/file' => '\Opine\RouteTest@sampleOutput',
-                    '/file/{name}' => '\Opine\RouteTest@sampleOutput2'
+                    '' => 'controller@sampleOutput',
+                    '/file' => 'controller@sampleOutput',
+                    '/file/{name}' => 'controller@sampleOutput2'
                 ]
             ],
-            '\Opine\RouteTest@afterFilter'
+            'controller@afterFilter'
         );
-        //$this->route->get('/sample/{input}', '\Opine\RouteTest@sampleOutput2');
+
+        $this->route->get('/sample2', 'controller@sampleOutput', 'Sample');
+
+        $this->route->get('/sample3/{name}', 'controller@sampleOutput2', 'SampleParam');
+
+        $this->route->get('/sample3/{name}/{age}/{location}', 'controller@sampleOutput3', 'SampleParamAssoc');
+
+        $this->route->get('/redirect', 'controller@sampleRedirect');
+
+        //$this->route->get('/sample/{input}', 'controller@sampleOutput2');
         //$this->route->cacheSet();
 /*
         $this->route->get('/', function () {
@@ -151,25 +162,13 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($response == 'STARTSAMPLExyzEND' && $header == 200);
     }
 
-/*
-    public function testRouteWithStringWithVarPathController () {
-        $response = $this->route->run('GET', '/sample/abc', $header);
-        $this->assertTrue($response == 'SAMPLEabc' && $header == 200);
-    }
-*/
-    public function sampleOutput () {
-        echo 'SAMPLE';
+    public function testRouteFindNamedRoutes () {
+        $this->assertTrue($this->route->runNamed('Sample') == 'SAMPLE');
+        $this->assertTrue($this->route->runNamed('SampleParam', ['Ryan']) == 'SAMPLERyan');
+        $this->assertTrue($this->route->runNamed('SampleParamAssoc', ['age' => 35, 'location' => 'NY', 'name' => 'Ryan']) == 'Name: Ryan Age: 35 Location: NY');
     }
 
-    public function sampleOutput2 ($data) {
-        echo 'SAMPLE' . $data;
-    }
-
-    public function beforeFilter () {
-        echo 'START';
-    }
-
-    public function afterFilter () {
-        echo 'END';
+    public function testRouteRedirect () {
+        $this->assertTrue($this->route->run('GET', '/redirect', $header) == 'From Redirect');
     }
 }

@@ -25,6 +25,7 @@
 namespace Opine;
 use FastRoute\Dispatcher\GroupCountBased;
 use Exception;
+use ReflectionClass;
 
 class Route {
     private $collector;
@@ -35,12 +36,37 @@ class Route {
     private $cache = false;
     private $container;
     private $cachePath;
+    private $path = false;
+    private $queryString = false;
+    private $get = false;
+    private $namedRoutes = [];
 
     public function __construct ($root, $collector, $container=false) {
         $this->root = $root;
         $this->cachePath = $this->root . '/../cache/routes.php';
         $this->collector = $collector;
         $this->container = $container;
+    }
+
+    public function pathGet () {
+        if ($this->path === false) {
+            $this->pathDetermine();
+        }
+        return $this->path;
+    }
+
+    public function queryStringGet () {
+        if ($this->queryString === false) {
+            $this->pathDetermine();
+        }
+        return $this->queryString;
+    }
+
+    public function getGet () {
+        if ($this->get === false) {
+            $this->pathDetermine();
+        }
+        return $this->get;   
     }
 
     public function cachePathSet ($path) {
@@ -62,6 +88,12 @@ class Route {
         return $this;
     }
 
+    private function actionPrepare($callback) {
+        $this->stringToCallback($callback);
+        $this->arrayToService($callback);
+        return $callback;
+    }
+
     public function purgeAfter() {
         $this->after = [];
         return $this;
@@ -78,14 +110,23 @@ class Route {
             'pattern' => '',
             'callback' => '',
             'after' => false,
-            'group' => false
+            'group' => false,
+            'name' => false
         ];
         if (is_string($arguments[0]) && substr_count($arguments[0], '@') == 1) {
             $parsed['before'] = array_shift($arguments);
         }
         $parsed['pattern'] = array_shift($arguments);
         if (count($arguments) == 2) {
+            if (substr_count($arguments[1], '@') == 1) {
+                $parsed['after'] = array_pop($arguments);
+            } else {
+                $parsed['name'] = array_pop($arguments);
+            }
+        }
+        if (count($arguments) == 3) {
             $parsed['after'] = array_pop($arguments);
+            $parsed['name'] = array_pop($arguments);
         }
         $parsed['callback'] = $arguments[0];
         $this->patternNested($parsed);
@@ -95,10 +136,11 @@ class Route {
 
     private function patternNested (Array &$arguments) {
         if (!is_array($arguments['callback'])) {
-            return;
+            return false;
         }
         $arguments['group'] = [];
         $this->patternNestedCallback($arguments, $arguments['pattern'], $arguments['callback']);
+        return true;
     }
 
     private function patternNestedCallback (Array &$arguments, $prefix, Array $group) {
@@ -165,7 +207,7 @@ class Route {
         return $this;
     }
 
-    private function stringToCallback (&$callback) {
+    public function stringToCallback (&$callback) {
         if (!is_string($callback)) {
             return;
         }
@@ -176,7 +218,7 @@ class Route {
         }
     }
 
-    private function arrayToService (&$callback) {
+    public function arrayToService (&$callback) {
         if (!is_array($callback) || $this->container === false) {
             return;
         }
@@ -190,6 +232,9 @@ class Route {
         if ($arguments['group'] == false) {
             $this->stringToCallback($arguments['callback']);
             $this->collector->addRoute($method, $arguments['pattern'], $arguments['callback']);
+            if (!empty($arguments['name'])) {
+                $this->namedRoutes[$arguments['name']] = $arguments['callback'];
+            }
             return;
         }
         foreach ($arguments['group'] as $group) {
@@ -214,85 +259,182 @@ class Route {
         return $this->dispatcher;
     }
 
-    private function filterParse (Array &$callable) {
+    private function filterParse (Array &$callable, &$beforeActions=[], &$afterActions=[]) {
         //[ClassBBBBmethodbbbbClass, methodAAAAClassaaaamethod]
         if (substr_count($callable[0], 'BBBB') == 1 && substr_count($callable[0], 'bbbb') == 1) {
             $parts = preg_split('/(BBBB|bbbb)/', $callable[0]);
             $callable[0] = $parts[2];
-            $this->before([$parts[0], $parts[1]]);
+            $beforeActions[] = $this->actionPrepare([$parts[0], $parts[1]]);
         }
         if (substr_count($callable[1], 'AAAA') == 1 && substr_count($callable[1], 'aaaa') == 1) {
             $parts = preg_split('/(AAAA|aaaa)/', $callable[1]);
             $callable[1] = $parts[0];
-            $this->after([$parts[1], $parts[2]]);
+            $afterActions[] = $this->actionPrepare([$parts[1], $parts[2]]);
         }
     }
 
-    public function run ($method=false, $uri=false, &$header=false) {
+    private function pathDetermine ($path=false, &$getModified=false) {
+        $this->queryString = '';
+        $this->get = [];
+        if ($path === false) {
+            $this->path = $_SERVER['REQUEST_URI'];
+            if (substr_count($this->path, '?') > 0) {
+                $this->path = str_replace('?' . $_SERVER['QUERY_STRING'], '', $path);
+                $this->queryString = $_SERVER['QUERY_STRING'];
+            }
+        } else {
+            $this->path = $path;
+            if (substr_count($path, '?') > 0) {
+                $parts = explode('?', $path, 2);
+                parse_str($parts[1], $_GET);
+                $this->queryString = $parts[1];
+                $this->path = $parts[0];
+                $getModified = true;
+            }
+        }
+        $this->get = $_GET;
+    }
+
+    public function execute (Array $callable, Array $parameters=[], $beforeActionsIn=[], $afterActionsIn=[]) {
+        $beforeActions = array_merge($this->before, $beforeActionsIn);
+        $afterActions = array_merge($this->after, $afterActionsIn);
+        $this->filterParse($callable, $beforeActions, $afterActions);
+        foreach ($beforeActions as $before) {
+            if (!is_object($before[0])) {
+                $before[0] = new $before[0]();
+            }
+            if ($this->response($before($parameters)) === false) {
+                return;
+            }
+        }
+        $this->purgeBefore();
+        $this->arrayToService($callable);
+        if (!is_object($callable[0])) {
+            $callable[0] = new $callable[0]();
+        }
+        if ($this->response(call_user_func_array($callable, $parameters)) === false) {
+            return;
+        }
+        foreach ($afterActions as $after) {
+            if (!is_object($after[0])) {
+                $after[0] = new $after[0]();
+            }
+            if ($this->response($after($parameters)) === false) {
+                return;
+            }
+        }
+        $this->purgeAfter();
+        return;
+    }
+
+    public function run ($method=false, $path=false, &$header=false) {
         $originalGet = $_GET;
         $getModified = false;
         $debug = false;
         if ($method === false) {
             $method = $_SERVER['REQUEST_METHOD'];
         }
-        if ($uri === false) {
-            $uri = $_SERVER['REQUEST_URI'];
-            if (substr_count($uri, '?') > 0) {
-                $uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $uri);
-            }
-        } else {
-            if (substr_count($uri, '?') > 0) {
-                $parts = explode('?', $uri, 2);
-                parse_str($parts[1], $_GET);
-                $uri = $parts[0];
-                $getModified = true;
-            }
-        }
+        $this->pathDetermine($path, $getModified);
         $dispatcher = $this->dispatcher();
-        $route = $dispatcher->dispatch($method, $uri);
+        $route = $dispatcher->dispatch($method, $this->path);
         switch ($route[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                $header = 404;
-                $return = false;
+                http_response_code(404);
+                $output = false;
                 break;
 
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                $header = 405;
-                $return = false;
+                http_response_code(405);
+                $output = false;
                 break;
 
             case \FastRoute\Dispatcher::FOUND:
-                $this->filterParse($route[1]);
-                $header =  200;
+                http_response_code(200);
                 ob_start();
-                foreach ($this->before as $before) {
-                    if (!is_object($before[0])) {
-                        $before[0] = new $before[0]();
-                    }
-                    $before($route[2]);
-                }
-                $this->arrayToService($route[1]);
-                if (!is_object($route[1][0])) {
-                    $route[1][0] = new $route[1][0]();
-                }
-                call_user_func_array($route[1], $route[2]);
-                foreach ($this->after as $after) {
-                    if (!is_object($after[0])) {
-                        $after[0] = new $after[0]();
-                    }
-                    $after($route[2]);
-                }
-                $return = ob_get_clean();
+                $this->execute($route[1], $route[2]);
+                $output = ob_get_clean();
                 break;
+
+            default:
+                http_response_code(404);
+                $output = false;
         }
         if ($getModified) {
             $_GET = $originalGet;
         }
-        http_response_code($header);
-        return $return;
+        $header = http_response_code();
+        return $output;
     }
 
-    public function getData () {
+    public function runNamed ($name, Array $parameters=[]) {
+        if (!array_key_exists($name, $this->namedRoutes)) {
+            http_response_code(404);
+            return false;
+        }
+        ob_start();
+        $beforeActions = [];
+        $afterActions = [];
+        $action = $this->namedRoutes[$name];
+        $this->filterParse($action, $beforeActions, $afterActions);
+        if (count($parameters) == 0) {
+            $result = $this->execute($action, $parameters, $beforeActions, $afterActions);
+        } else {
+            if ($parameters !== array_values($parameters)) {
+                $reflector = new ReflectionClass($action[0]);
+                $method = $reflector->getMethod($action[1]);
+                $reflectedParameters = $method->getParameters();
+                $newParameters = [];
+                foreach ($reflectedParameters as $parameter) {
+                    $parameter = $parameter->name;
+                    if (!array_key_exists($parameter, $parameters)) {
+                        $newParameters[] = null;
+                        continue;
+                    }
+                    $newParameters[] = $parameters[$parameter];
+                }
+                $result = $this->execute($action, $newParameters);
+            } else {
+                $result = $this->execute($action, $parameters);
+            }
+        }
+        return ob_get_clean();
+    }
+
+    private function response (&$response) {
+//NOTE: should we look into  support for streams? (like Slim)
+        if ($response === '') {
+            return true;
+        } elseif ($response === false) {
+            return false;
+        } elseif (is_string($response)) {
+            echo $response;
+            return true;
+        } elseif (is_array($response)) {
+            echo json_encode($response);
+            return true;
+        } elseif (is_object($response)) {
+            $class = get_class($response);
+            if ($class == 'Opine\Redirect') {
+                $response->execute();
+                return false;
+            } elseif (method_exists($response, '__toString')) {
+                echo (string)$response;
+                return true;
+            } else {
+                return false;
+            }
+        } elseif (is_integer($response)) {
+            http_response_code($response);
+        } else {
+            return true;
+        }
+    }
+
+    public function namedRoutesGet () {
+        return $this->namedRoutes;
+    }
+
+    public function collectorDataGet () {
         return $this->collector->getData();
     }
 
