@@ -400,7 +400,7 @@ class Route {
         return ob_get_clean();
     }
 
-    private function response (&$response) {
+    private function response ($response) {
 //NOTE: should we look into  support for streams? (like Slim)
         if ($response === '') {
             return true;
