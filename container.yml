@@ -1,20 +1,7 @@
+imports:
+    - 'package-container.yml'
+
 services:
-    yamlSlow:
-        class:     'Symfony\Component\Yaml\Yaml'
-    route:
-        class:     'Opine\Route'
-        arguments: ['%root%', '@fastrouteCollector', '@container']
-    fastrouteCollector:
-        class:     'FastRoute\RouteCollector'
-        arguments: ['@fastrouteParser', '@fastrouteGenerator']
-    fastrouteParser:
-        class:     'FastRoute\RouteParser\Std'
-    fastrouteGenerator:
-        class:     'FastRoute\DataGenerator\GroupCountBased'
     controller:
         class:     'Controller'
         arguments: ['@redirect']
-    redirect:
-        class:     'Opine\Redirect'
-        arguments: ['@route']
-        scope:     'prototype'
