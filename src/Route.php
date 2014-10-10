@@ -24,6 +24,7 @@
  */
 namespace Opine;
 use FastRoute\Dispatcher\GroupCountBased;
+use FastRoute\BadRouteException;
 use Exception;
 use ReflectionClass;
 
@@ -40,12 +41,18 @@ class Route {
     private $queryString = false;
     private $get = false;
     private $namedRoutes = [];
+    private $testMode = false;
+    private $knownRoutes = [];
 
     public function __construct ($root, $collector, $container=false) {
         $this->root = $root;
         $this->cachePath = $this->root . '/../cache/routes.php';
         $this->collector = $collector;
         $this->container = $container;
+    }
+
+    public function testMode() {
+        $this->testMode = true;
     }
 
     public function pathGet () {
@@ -228,10 +235,23 @@ class Route {
         }
     }
 
+    public function show () {
+        return $this->knownRoutes;
+    }
+
     private function method ($method, $arguments) {
+        if (is_string($arguments['callback'])) {
+            $this->knownRoutes[$method][$arguments['pattern']] = $arguments['callback'];
+        }
         if ($arguments['group'] == false) {
             $this->stringToCallback($arguments['callback']);
-            $this->collector->addRoute($method, $arguments['pattern'], $arguments['callback']);
+            try {
+                $this->collector->addRoute($method, $arguments['pattern'], $arguments['callback']);
+            } catch (BadRouteException $e) {
+                if (!$this->testMode) {
+                    throw $e;
+                }
+            }
             if (!empty($arguments['name'])) {
                 $this->namedRoutes[$arguments['name']] = $arguments['callback'];
             }
@@ -239,7 +259,13 @@ class Route {
         }
         foreach ($arguments['group'] as $group) {
             $this->stringToCallback($group['callback']);
-            $this->collector->addRoute($method, $group['pattern'], $group['callback']);
+            try {
+                $this->collector->addRoute($method, $group['pattern'], $group['callback']);
+            } catch (BadRouteException $e) {
+                if (!$this->testMode) {
+                    throw $e;
+                }
+            }
         }
     }
 
