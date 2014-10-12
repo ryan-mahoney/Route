@@ -23,9 +23,10 @@
  * THE SOFTWARE.
  */
 namespace Opine;
+use RouteException;
+use Redirect;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\BadRouteException;
-use Exception;
 use ReflectionClass;
 
 class Route {
@@ -258,6 +259,7 @@ class Route {
             return;
         }
         foreach ($arguments['group'] as $group) {
+            $this->knownRoutes[$method][$group['pattern']] = $group['callback'];
             $this->stringToCallback($group['callback']);
             try {
                 $this->collector->addRoute($method, $group['pattern'], $group['callback']);
@@ -476,5 +478,3 @@ class Route {
         return $this->collector->getData();
     }
 }
-
-class RouteException extends Exception {}
