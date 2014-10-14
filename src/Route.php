@@ -377,10 +377,15 @@ class Route {
                 break;
 
             case \FastRoute\Dispatcher::FOUND:
-                http_response_code(200);
-                ob_start();
-                $this->execute($route[1], $route[2]);
-                $output = ob_get_clean();
+                try {
+                    ob_start();
+                    $this->execute($route[1], $route[2]);
+                    $output = ob_get_clean();
+                    http_response_code(200);
+                } catch (Exception $e) {
+                    http_response_code(500);
+                    $output = false;
+                }
                 break;
 
             default:
