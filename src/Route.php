@@ -307,7 +307,7 @@ class Route {
         if ($path === false) {
             $this->path = $_SERVER['REQUEST_URI'];
             if (substr_count($this->path, '?') > 0) {
-                $this->path = str_replace('?' . $_SERVER['QUERY_STRING'], '', $path);
+                $this->path = str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->path);
                 $this->queryString = $_SERVER['QUERY_STRING'];
             }
         } else {
