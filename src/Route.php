@@ -482,4 +482,8 @@ class Route {
         );
         return $this->collector->getData();
     }
+
+    public function redirect () {
+        return new \Opine\Redirect($this);
+    }
 }

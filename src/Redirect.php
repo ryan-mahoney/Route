@@ -65,7 +65,7 @@ class Redirect {
 	public function execute () {
 		switch ($this->mode) {
 			case 'redirect':
-				header('Location: ' . $location);
+				header('Location: ' . $this->location);
 				break;
 
 			case 'named':
