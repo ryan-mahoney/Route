@@ -332,7 +332,7 @@ class Route {
                 $before[0] = new $before[0]();
             }
             if ($this->response($before($parameters)) === false) {
-                return;
+                return false;
             }
         }
         $this->purgeBefore();
@@ -355,7 +355,7 @@ class Route {
         return;
     }
 
-    public function run ($method=false, $path=false, &$header=false) {
+    public function run ($method=false, $path=false, &$code=false) {
         $originalGet = $_GET;
         $getModified = false;
         $debug = false;
@@ -378,10 +378,14 @@ class Route {
 
             case \FastRoute\Dispatcher::FOUND:
                 try {
-                    ob_start();
-                    $this->execute($route[1], $route[2]);
-                    $output = ob_get_clean();
                     http_response_code(200);
+                    ob_start();
+                    $response = $this->execute($route[1], $route[2]);
+                    if ($response === false) {
+                        $output = false;    
+                    } else {
+                        $output = ob_get_clean();
+                    }
                 } catch (Exception $e) {
                     http_response_code(500);
                     $output = false;
@@ -395,7 +399,7 @@ class Route {
         if ($getModified) {
             $_GET = $originalGet;
         }
-        $header = http_response_code();
+        $code = http_response_code();
         return $output;
     }
 
@@ -458,6 +462,7 @@ class Route {
             }
         } elseif (is_integer($response)) {
             http_response_code($response);
+            return false;
         } else {
             return true;
         }
