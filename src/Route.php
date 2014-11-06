@@ -331,7 +331,7 @@ class Route {
             if (!is_object($before[0])) {
                 $before[0] = new $before[0]();
             }
-            if ($this->response($before($parameters)) === false) {
+            if ($this->response(call_user_func_array($before, $parameters)) === false) {
                 return false;
             }
         }
