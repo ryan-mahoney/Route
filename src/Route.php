@@ -320,6 +320,7 @@ class Route {
                 $getModified = true;
             }
         }
+        $this->path = rtrim($this->path, '/');
         $this->get = $_GET;
     }
 
