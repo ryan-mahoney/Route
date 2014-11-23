@@ -39,7 +39,7 @@ class Service implements RouteInterface {
     private $cache = false;
     private $container;
     private $cachePath;
-    private $path = false;
+    private $path;
     private $queryString;
     private $get = [];
     private $namedRoutes = [];
@@ -58,7 +58,7 @@ class Service implements RouteInterface {
     }
 
     public function pathGet () {
-        if ($this->path === false) {
+        if (empty($this->path)) {
             $this->pathDetermine();
         }
         return $this->path;
