@@ -362,7 +362,6 @@ class Service implements RouteInterface {
     public function run ($method=false, $path=false, &$code=false) {
         $originalGet = $_GET;
         $getModified = false;
-        $debug = false;
         if ($method === false) {
             $method = $_SERVER['REQUEST_METHOD'];
         }
@@ -418,7 +417,7 @@ class Service implements RouteInterface {
         $action = $this->namedRoutes[$name];
         $this->filterParse($action, $beforeActions, $afterActions);
         if (count($parameters) == 0) {
-            $result = $this->execute($action, $parameters, $beforeActions, $afterActions);
+            $this->execute($action, $parameters, $beforeActions, $afterActions);
         } else {
             if ($parameters !== array_values($parameters)) {
                 $reflector = new ReflectionClass($action[0]);
@@ -433,9 +432,9 @@ class Service implements RouteInterface {
                     }
                     $newParameters[] = $parameters[$parameter];
                 }
-                $result = $this->execute($action, $newParameters);
+                $this->execute($action, $newParameters);
             } else {
-                $result = $this->execute($action, $parameters);
+                $this->execute($action, $parameters);
             }
         }
         return ob_get_clean();
