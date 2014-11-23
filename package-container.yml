@@ -1,9 +1,9 @@
 services:
     route:
-        class:     'Opine\Route'
+        class:     'Opine\Route\Service'
         arguments: ['%root%', '@fastrouteCollector', '@container']
     redirect:
-        class:     'Opine\Redirect'
+        class:     'Opine\Route\Redirect'
         arguments: ['@route']
         scope:     'prototype'
     fastrouteCollector:

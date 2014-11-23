@@ -19,7 +19,8 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "nikic/fast-route": "dev-master"
+        "nikic/fast-route": "dev-master",
+        "opine/interfaces": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.32",

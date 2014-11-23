@@ -3,7 +3,7 @@ class Controller {
 	private $redirect;
 
 	public function __construct ($redirect) {
-		$this->redirect = $redirect; 
+		$this->redirect = $redirect;
 	}
 
 	public function sampleRedirect () {

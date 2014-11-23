@@ -28,8 +28,10 @@ use Redirect;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\BadRouteException;
 use ReflectionClass;
+use Opine\Interfaces\Route as RouteInterface;
+use Opine\Interfaces\Container as ContainerInterface;
 
-class Service {
+class Service implements RouteInterface {
     private $collector;
     private $before = [];
     private $after = [];
@@ -45,7 +47,7 @@ class Service {
     private $testMode = false;
     private $knownRoutes = [];
 
-    public function __construct ($root, $collector, $container=false) {
+    public function __construct ($root, $collector, ContainerInterface $container) {
         $this->root = $root;
         $this->cachePath = $this->root . '/../cache/routes.php';
         $this->collector = $collector;
@@ -185,7 +187,7 @@ class Service {
         }
     }
 
-    public function get () {
+    public function get ($pattern, $callback) {
         $arguments = $this->variableMethodArgs(func_get_args());
         $this->method('GET', $arguments);
         return $this;
@@ -215,7 +217,7 @@ class Service {
         return $this;
     }
 
-    public function stringToCallback (&$callback) {
+    private function stringToCallback (&$callback) {
         if (!is_string($callback)) {
             return;
         }
@@ -226,7 +228,7 @@ class Service {
         }
     }
 
-    public function arrayToService (&$callback) {
+    private function arrayToService (&$callback) {
         if (!is_array($callback) || $this->container === false) {
             return;
         }
@@ -326,7 +328,7 @@ class Service {
         $this->get = $_GET;
     }
 
-    public function execute (Array $callable, Array $parameters=[], $beforeActionsIn=[], $afterActionsIn=[]) {
+    public function execute (Array $callable, Array $parameters=[], Array $beforeActionsIn=[], Array $afterActionsIn=[]) {
         $beforeActions = array_merge($this->before, $beforeActionsIn);
         $afterActions = array_merge($this->after, $afterActionsIn);
         $this->filterParse($callable, $beforeActions, $afterActions);
@@ -385,7 +387,7 @@ class Service {
                     ob_start();
                     $response = $this->execute($route[1], $route[2]);
                     if ($response === false) {
-                        $output = false;    
+                        $output = false;
                     } else {
                         $output = ob_get_clean();
                     }
@@ -441,7 +443,6 @@ class Service {
     }
 
     private function response ($response) {
-//NOTE: should we look into  support for streams? (like Slim)
         if ($response === '') {
             return true;
         } elseif ($response === false) {
@@ -454,7 +455,7 @@ class Service {
             return true;
         } elseif (is_object($response)) {
             $class = get_class($response);
-            if ($class == 'Opine\Redirect') {
+            if ($class == 'Opine\Route\Redirect') {
                 $response->execute();
                 return false;
             } elseif (method_exists($response, '__toString')) {

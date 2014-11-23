@@ -26,59 +26,67 @@ namespace Opine\Route;
 use Exception;
 
 class Redirect {
-	private $mode = false;
-	private $routeName;
-	private $parameters;
-	private $location;
-	private $action;
-	private $route;
+    private $mode = false;
+    private $routeName;
+    private $parameters;
+    private $location;
+    private $action;
+    private $route;
 
-	public function __construct ($route) {
-		$this->route = $route;
-	}
+    public function __construct ($route) {
+        $this->route = $route;
+    }
 
-	public function to ($location) {
-		$this->mode = 'redirect';
-		$this->location = $location;
-		return $this;
-	}
+    public function to ($location) {
+        $this->mode = 'redirect';
+        $this->location = $location;
+        return $this;
+    }
 
-	public function route ($routeName, Array $parameters=[]) {
-		$this->mode = 'named';
-		$this->routeName = $routeName;
-		$this->parameters = $parameters;
-		return $this;
-	}
+    public function route ($routeName, Array $parameters=[]) {
+        $this->mode = 'named';
+        $this->routeName = $routeName;
+        $this->parameters = $parameters;
+        return $this;
+    }
 
-	public function action ($action, Array $parameters=[]) {
-		$this->mode = 'action';
-		$this->action = $action;
-		$this->parameters = $parameters;
-		return $this;
-	}
+    public function action ($action, Array $parameters=[]) {
+        $this->mode = 'action';
+        $this->action = $action;
+        $this->parameters = $parameters;
+        return $this;
+    }
 
-	public function with ($key, $value) {
-		$_SESSION[$key] = $value;
-		return $this;
-	}
+    public function with ($key, $value) {
+        $_SESSION[$key] = $value;
+        return $this;
+    }
 
-	public function execute () {
-		switch ($this->mode) {
-			case 'redirect':
-				header('Location: ' . $this->location);
-				break;
+    public function execute () {
+        switch ($this->mode) {
+            case 'redirect':
+                header('Location: ' . $this->location);
+                break;
 
-			case 'named':
-				$this->route->runNamed($this->routeName, $this->parameters);
-				break;
+            case 'named':
+                $this->route->runNamed($this->routeName, $this->parameters);
+                break;
 
-			case 'action':
-				if (is_string($this->action)) {
-					$this->route->stringToCallback($this->action);
-				}
-				$this->route->execute($this->action, $this->parameters);
-				break;
-		}
-		return false;
-	}
+            case 'action':
+                if (is_string($this->action)) {
+                    $this->stringToCallback($this->action);
+                }
+                $this->route->execute($this->action, $this->parameters);
+                break;
+        }
+        return false;
+    }
+
+    private function stringToCallback (&$callback) {
+        if (substr_count($callback, '@') == 1) {
+            $callback = explode('@', $callback);
+        } else {
+            throw new \Opine\Route\Exception('Invalid callback: ' . $callback);
+        }
+    }
 }
