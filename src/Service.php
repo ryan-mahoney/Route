@@ -24,7 +24,6 @@
  */
 namespace Opine\Route;
 use RouteException;
-use Redirect;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\BadRouteException;
 use ReflectionClass;
@@ -35,14 +34,14 @@ class Service implements RouteInterface {
     private $collector;
     private $before = [];
     private $after = [];
-    private $dispatcher = false;
+    private $dispatcher;
     private $root;
     private $cache = false;
     private $container;
     private $cachePath;
     private $path = false;
-    private $queryString = false;
-    private $get = false;
+    private $queryString;
+    private $get = [];
     private $namedRoutes = [];
     private $testMode = false;
     private $knownRoutes = [];
@@ -66,14 +65,14 @@ class Service implements RouteInterface {
     }
 
     public function queryStringGet () {
-        if ($this->queryString === false) {
+        if (empty($this->queryString)) {
             $this->pathDetermine();
         }
         return $this->queryString;
     }
 
     public function getGet () {
-        if ($this->get === false) {
+        if (empty($this->get)) {
             $this->pathDetermine();
         }
         return $this->get;
@@ -274,7 +273,7 @@ class Service implements RouteInterface {
     }
 
     private function dispatcher () {
-        if ($this->dispatcher === false) {
+        if (empty($this->dispatcher)) {
             if (is_array($this->cache) == true) {
                 $this->dispatcher = new GroupCountBased($this->cache);
             } else {

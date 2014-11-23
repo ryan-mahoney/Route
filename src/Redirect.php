@@ -23,10 +23,9 @@
  * THE SOFTWARE.
  */
 namespace Opine\Route;
-use Exception;
 
 class Redirect {
-    private $mode = false;
+    private $mode;
     private $routeName;
     private $parameters;
     private $location;
