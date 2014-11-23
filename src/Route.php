@@ -22,14 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Opine;
+namespace Opine\Route;
 use RouteException;
 use Redirect;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\BadRouteException;
 use ReflectionClass;
 
-class Route {
+class Service {
     private $collector;
     private $before = [];
     private $after = [];
@@ -222,7 +222,7 @@ class Route {
         if (substr_count($callback, '@') == 1) {
             $callback = explode('@', $callback);
         } else {
-            throw new RouteException('Invalid callback: ' . $callback);
+            throw new \Opine\Route\Exception('Invalid callback: ' . $callback);
         }
     }
 
@@ -499,6 +499,6 @@ class Route {
     }
 
     public function redirect () {
-        return new \Opine\Redirect($this);
+        return new \Opine\Route\Redirect($this);
     }
 }

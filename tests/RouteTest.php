@@ -1,19 +1,23 @@
 <?php
 namespace Opine;
 
+use Opine\Config\Service as Config;
+use Opine\Container\Service as Container;
+
 class RouteTest extends \PHPUnit_Framework_TestCase {
     private $route;
 
     public function setup () {
-        date_default_timezone_set('UTC');
         $root = __DIR__ . '/../public';
-        $container = new Container($root, $root . '/../container.yml');
+        $config = new Config($root);
+        $config->cacheSet();
+        $container = new Container($root, $config, $root . '/../container.yml');
         $this->route = $container->route;
     }
 
     private function initializeRoutes () {
         $this->route->get('/sample', 'controller@sampleOutput');
-        
+
         $this->route->get('/api', [
             '/add' => 'controller@sampleOutput',
             '/edit' => 'controller@sampleOutput',
@@ -24,9 +28,9 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
                 '/file/{name}' => 'controller@sampleOutput2'
             ]
         ]);
-        
+
         $this->route->get(
-            'controller@beforeFilter', 
+            'controller@beforeFilter',
             '/api2', [
                 '/add' => 'controller@sampleOutput',
                 '/edit' => 'controller@sampleOutput',
@@ -115,7 +119,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
             echo 'Before';
         });
         $response = $this->route->run('GET', '/');
-        $this->assertTrue($response === $expected);   
+        $this->assertTrue($response === $expected);
     }
 
     public function testRouteGetMatchAfter () {
@@ -124,7 +128,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
             echo 'After';
         });
         $response = $this->route->run('GET', '/');
-        $this->assertTrue($response === $expected);   
+        $this->assertTrue($response === $expected);
     }
 
     public function testRoutePurgeBeforeAfter () {
@@ -142,7 +146,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
 
     public function testRouteWithinRoute () {
         $response = $this->route->run('GET', '/outer');
-        $this->assertTrue($response === 'OuterInner');   
+        $this->assertTrue($response === 'OuterInner');
     }
 */
 

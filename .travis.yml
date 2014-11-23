@@ -1,19 +1,16 @@
 language: php
 php:
   - 5.5
-  
+
 install:
   - composer self-update
-  - composer install
+  - composer install --dev
 
 services:
   - memcached
-  - mongodb
-  
+
 before_script:
-  - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension = memcache.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - mongo phpunit --eval 'db.addUser("unit", "test");'
 
 script: vendor/bin/phpunit --coverage-clover=coverage.clover
 

@@ -1,5 +1,4 @@
 <?php
-namespace Opine;
-use Exception;
+namespace Opine\Route;
 
-class RouteException extends Exception {}
+class Exception extends \Exception {}

@@ -1,4 +1,4 @@
-vendor
-composer.lock
-report
-cache/routes.php
+/vendor
+/composer.lock
+/report
+/cache/routes.php

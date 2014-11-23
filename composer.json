@@ -1,5 +1,5 @@
 {
-    "name": "opine\/route",
+    "name": "opine/route",
     "type": "library",
     "minimum-stability": "dev",
     "description": "Service wrapper for FastRoute providing a more slim-like interface",
@@ -13,19 +13,22 @@
         {
             "name": "Ryan Mahoney",
             "email": "ryan@virtuecenter.com",
-            "homepage": "http:\/\/opine-php.org",
+            "homepage": "http://opine-php.org",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "phpunit\/phpunit": "3.7.32",
-        "opine\/container": "dev-master",
-        "nikic\/fast-route": "dev-master"
+        "php": ">=5.5.0",
+        "nikic/fast-route": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.32",
+        "opine/config": "dev-master",
+        "opine/container": "dev-master"
     },
     "autoload": {
         "psr-4": {
-            "Opine\\": "src\/"
+            "Opine\\Route\\": "src/"
         }
     }
 }
