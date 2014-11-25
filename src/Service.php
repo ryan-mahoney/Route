@@ -48,7 +48,7 @@ class Service implements RouteInterface {
 
     public function __construct ($root, $collector, ContainerInterface $container) {
         $this->root = $root;
-        $this->cachePath = $this->root . '/../cache/routes.php';
+        $this->cachePath = $this->root . '/../var/cache/routes.php';
         $this->collector = $collector;
         $this->container = $container;
     }
