@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/Opine-Org/Route.png?label=ready&title=Ready)](https://waffle.io/Opine-Org/Route)
 Opine\Route (SlimFast)
 ======================
 
