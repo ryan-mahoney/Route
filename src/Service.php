@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 namespace Opine\Route;
-use RouteException;
+use Opine\Route\Exception as RouteException;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\BadRouteException;
 use ReflectionClass;
@@ -499,5 +499,20 @@ class Service implements RouteInterface {
 
     public function redirect () {
         return new \Opine\Route\Redirect($this);
+    }
+
+    public function service ($name) {
+        return $this->container->get($name);
+    }
+
+    public function serviceMethod ($compositeName) {
+        if (substr_count($compositeName, '@') != 1) {
+            throw new RouteException('invalid service name: ' . $compositeName . ': must container 1 "@" symbol');
+        }
+        list($serviceName, $methodName) = explode('@', $compositeName);
+        $service = $this->container->get($serviceName);
+        $args = func_get_args();
+        array_shift($args);
+        return call_user_func_array([$service, $methodName], $args);
     }
 }

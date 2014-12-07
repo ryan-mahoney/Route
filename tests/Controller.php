@@ -35,4 +35,8 @@ class Controller {
         echo 'END';
         return true;
     }
+
+    public function check ($letter) {
+        return 'success: ' . $letter;
+    }
 }

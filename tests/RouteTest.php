@@ -3,6 +3,7 @@ namespace Opine;
 
 use Opine\Config\Service as Config;
 use Opine\Container\Service as Container;
+use Opine\Route\Exception as RouteException;
 use PHPUnit_Framework_TestCase;
 
 class RouteTest extends PHPUnit_Framework_TestCase {
@@ -82,5 +83,23 @@ class RouteTest extends PHPUnit_Framework_TestCase {
     public function testRouteRedirect () {
         $header = '';
         $this->assertTrue($this->route->run('GET', '/redirect', $header) === 'From Redirect');
+    }
+
+    public function testRouteServiceWrapper () {
+        $this->assertTrue('Controller' === get_class($this->route->service('controller')));
+    }
+
+    public function testRouteServiceMethodWrapper () {
+        $this->assertTrue('success: A' === $this->route->serviceMethod('controller@check', 'A'));
+    }
+
+    public function testRouteServiceMethodWrapperFail () {
+        $success = true;
+        try {
+            $this->route->serviceMethod('controller:check', 'A');
+        } catch (RouteException $e) {
+            $success = false;
+        }
+        $this->assertFalse($success);
     }
 }
