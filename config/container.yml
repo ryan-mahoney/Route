@@ -1,5 +1,5 @@
 imports:
-    - 'config/package-container.yml'
+    - 'package-container.yml'
 
 services:
     controller:
