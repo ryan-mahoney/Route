@@ -392,6 +392,7 @@ class Service implements RouteInterface {
                 } catch (Exception $e) {
                     http_response_code(500);
                     $output = false;
+                    throw $e;
                 }
                 break;
 
@@ -511,6 +512,9 @@ class Service implements RouteInterface {
         }
         list($serviceName, $methodName) = explode('@', $compositeName);
         $service = $this->container->get($serviceName);
+        if ($service === FALSE) {
+            throw new Exception('Service: ' . $serviceName . ': Not available in container. Check spelling or project build status.');
+        }
         $args = func_get_args();
         array_shift($args);
         return call_user_func_array([$service, $methodName], $args);
