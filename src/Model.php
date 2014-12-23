@@ -23,22 +23,26 @@
  * THE SOFTWARE.
  */
 namespace Opine\Route;
+
 use Symfony\Component\Yaml\Yaml;
 
-class Model {
+class Model
+{
     private $root;
     private $route;
     private $bundleModel;
 
-    public function __construct ($root, $route, $bundleModel=NULL) {
+    public function __construct($root, $route, $bundleModel = null)
+    {
         $this->root = $root;
         $this->route = $route;
         $this->bundleModel = $bundleModel;
     }
 
-    public function build () {
-        $routes = glob($this->root . '/../config/routes/*.yml');
-        if ($routes === FALSE) {
+    public function build()
+    {
+        $routes = glob($this->root.'/../config/routes/*.yml');
+        if ($routes === false) {
             $routes = [];
         }
         $this->bundleRoutes($routes);
@@ -47,7 +51,8 @@ class Model {
         }
     }
 
-    private function bundleRoutes (&$routes) {
+    private function bundleRoutes(&$routes)
+    {
         $bundles = $this->bundleModel->bundles();
         if (empty($bundles)) {
             return;
@@ -62,27 +67,30 @@ class Model {
         }
     }
 
-    public function yaml ($file) {
+    public function yaml($file)
+    {
         try {
             if (function_exists('yaml_parse_file')) {
                 $routes = yaml_parse_file($file);
             }
             $routes = Yaml::parse(file_get_contents($file));
         } catch (Exception $e) {
-            throw new Exception('Can not parse file: ' . $file . ', ' . $e->getMessage());
+            throw new Exception('Can not parse file: '.$file.', '.$e->getMessage());
         }
         foreach ($routes['routes'] as $method => $paths) {
             $this->paths($method, $paths);
         }
     }
 
-    private function paths ($method, Array $paths) {
+    private function paths($method, Array $paths)
+    {
         foreach ($paths as $pattern => $path) {
             $this->path($method, $pattern, $path);
         }
     }
 
-    private function path ($method, $pattern, $callback) {
+    private function path($method, $pattern, $callback)
+    {
         $options = [];
         $count = 0;
         if (is_array($callback)) {

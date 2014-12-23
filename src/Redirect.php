@@ -24,7 +24,8 @@
  */
 namespace Opine\Route;
 
-class Redirect {
+class Redirect
+{
     private $mode;
     private $routeName;
     private $parameters;
@@ -32,39 +33,49 @@ class Redirect {
     private $action;
     private $route;
 
-    public function __construct ($route) {
+    public function __construct($route)
+    {
         $this->route = $route;
     }
 
-    public function to ($location) {
+    public function to($location)
+    {
         $this->mode = 'redirect';
         $this->location = $location;
+
         return $this;
     }
 
-    public function route ($routeName, Array $parameters=[]) {
+    public function route($routeName, Array $parameters = [])
+    {
         $this->mode = 'named';
         $this->routeName = $routeName;
         $this->parameters = $parameters;
+
         return $this;
     }
 
-    public function action ($action, Array $parameters=[]) {
+    public function action($action, Array $parameters = [])
+    {
         $this->mode = 'action';
         $this->action = $action;
         $this->parameters = $parameters;
+
         return $this;
     }
 
-    public function with ($key, $value) {
+    public function with($key, $value)
+    {
         $_SESSION[$key] = $value;
+
         return $this;
     }
 
-    public function execute () {
+    public function execute()
+    {
         switch ($this->mode) {
             case 'redirect':
-                header('Location: ' . $this->location);
+                header('Location: '.$this->location);
                 break;
 
             case 'named':
@@ -78,14 +89,16 @@ class Redirect {
                 $this->route->execute($this->action, $this->parameters);
                 break;
         }
+
         return false;
     }
 
-    private function stringToCallback (&$callback) {
+    private function stringToCallback(&$callback)
+    {
         if (substr_count($callback, '@') == 1) {
             $callback = explode('@', $callback);
         } else {
-            throw new \Opine\Route\Exception('Invalid callback: ' . $callback);
+            throw new \Opine\Route\Exception('Invalid callback: '.$callback);
         }
     }
 }
