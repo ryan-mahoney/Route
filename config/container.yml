@@ -1,7 +1,9 @@
 imports:
-    - 'package-container.yml'
+    - package-container.yml
+    - ../../bundle/config/package-container.yml
 
 services:
     controller:
-        class:     'Controller'
-        arguments: ['@redirect']
+        class: Controller
+        arguments:
+            - @redirect

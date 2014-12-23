@@ -25,7 +25,8 @@
     "require-dev": {
         "phpunit/phpunit": "3.7.32",
         "opine/config": "dev-master",
-        "opine/container": "dev-master"
+        "opine/container": "dev-master",
+        "opine/bundle": "dev-master"
     },
     "autoload": {
         "psr-4": {

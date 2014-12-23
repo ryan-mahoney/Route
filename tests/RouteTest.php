@@ -8,6 +8,7 @@ use PHPUnit_Framework_TestCase;
 
 class RouteTest extends PHPUnit_Framework_TestCase {
     private $route;
+    private $routeModel;
 
     public function setup () {
         $root = __DIR__ . '/../public';
@@ -15,44 +16,12 @@ class RouteTest extends PHPUnit_Framework_TestCase {
         $config->cacheSet();
         $container = Container::instance($root, $config, $root . '/../config/container.yml');
         $this->route = $container->get('route');
+        $this->routeModel = $container->get('routeModel');
     }
 
     private function initializeRoutes () {
-        $this->route->get('/sample', 'controller@sampleOutput');
-
-        $this->route->get('/api', [
-            '/add' => 'controller@sampleOutput',
-            '/edit' => 'controller@sampleOutput',
-            '/list' => 'controller@sampleOutput',
-            '/upload' => [
-                '' => 'controller@sampleOutput',
-                '/file' => 'controller@sampleOutput',
-                '/file/{name}' => 'controller@sampleOutput2'
-            ]
-        ]);
-
-        $this->route->get(
-            'controller@beforeFilter',
-            '/api2', [
-                '/add' => 'controller@sampleOutput',
-                '/edit' => 'controller@sampleOutput',
-                '/list' => 'controller@sampleOutput',
-                '/upload' => [
-                    '' => 'controller@sampleOutput',
-                    '/file' => 'controller@sampleOutput',
-                    '/file/{name}' => 'controller@sampleOutput2'
-                ]
-            ],
-            'controller@afterFilter'
-        );
-
-        $this->route->get('/sample2', 'controller@sampleOutput', 'Sample');
-
-        $this->route->get('/sample3/{name}', 'controller@sampleOutput2', 'SampleParam');
-
-        $this->route->get('/sample3/{name}/{age}/{location}', 'controller@sampleOutput3', 'SampleParamAssoc');
-
-        $this->route->get('/redirect', 'controller@sampleRedirect');
+        $this->routeModel->build();
+        //$this->routeModel->yaml(__DIR__ . '/routes.yml');
     }
 
     public function testRouteWithStringController () {

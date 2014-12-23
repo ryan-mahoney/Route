@@ -1,15 +1,17 @@
 services:
     route:
-        class:     'Opine\Route\Service'
-        arguments: ['%root%', '@fastrouteCollector', '@container']
+        class: Opine\Route\Service
+        arguments:
+            - %root%
+            - @container
+    routeModel:
+        class: Opine\Route\Model
+        arguments:
+            - %root%
+            - @route
+            - @bundleModel
     redirect:
-        class:     'Opine\Route\Redirect'
-        arguments: ['@route']
-        scope:     'prototype'
-    fastrouteCollector:
-        class:     'FastRoute\RouteCollector'
-        arguments: ['@fastrouteParser', '@fastrouteGenerator']
-    fastrouteParser:
-        class:     'FastRoute\RouteParser\Std'
-    fastrouteGenerator:
-        class:     'FastRoute\DataGenerator\GroupCountBased'
+        class: Opine\Route\Redirect
+        scope: prototype
+        arguments:
+            - @route

@@ -1,6 +1,6 @@
 <?php
 /**
- * Opine\Route
+ * Opine\Route\Service
  *
  * Copyright (c)2013, 2014 Ryan Mahoney, https://github.com/Opine-Org <ryan@virtuecenter.com>
  *
@@ -24,11 +24,15 @@
  */
 namespace Opine\Route;
 use Opine\Route\Exception as RouteException;
-use FastRoute\Dispatcher\GroupCountBased;
+use FastRoute\Dispatcher\GroupCountBased as RouteDispatcher;
+use FastRoute\DataGenerator\GroupCountBased as RouteDataGenerator;
+use FastRoute\RouteCollector;
 use FastRoute\BadRouteException;
+use FastRoute\RouteParser\Std as RouteParser;
 use ReflectionClass;
 use Opine\Interfaces\Route as RouteInterface;
 use Opine\Interfaces\Container as ContainerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class Service implements RouteInterface {
     private $collector;
@@ -46,14 +50,16 @@ class Service implements RouteInterface {
     private $testMode = false;
     private $knownRoutes = [];
 
-    public function __construct ($root, $collector, ContainerInterface $container) {
-        $this->root = $root;
-        $this->cachePath = $this->root . '/../var/cache/routes.php';
-        $this->collector = $collector;
-        $this->container = $container;
+    public function __construct ($root, ContainerInterface $container) {
+        $this->root         = $root;
+        $this->container    = $container;
+        $this->cachePath    = $this->root . '/../var/cache/routes.php';
+        $fastrouteParser    = new RouteParser();
+        $fastrouteGenerator = new RouteDataGenerator();
+        $this->collector    = new RouteCollector($fastrouteParser, $fastrouteGenerator);
     }
 
-    public function testMode() {
+    public function testMode () {
         $this->testMode = true;
     }
 
@@ -113,106 +119,42 @@ class Service implements RouteInterface {
         return $this;
     }
 
-    private function variableMethodArgs (Array $arguments) {
-        $parsed = [
-            'before' => false,
-            'pattern' => '',
-            'callback' => '',
-            'after' => false,
-            'group' => false,
-            'name' => false
-        ];
-        if (is_string($arguments[0]) && substr_count($arguments[0], '@') == 1) {
-            $parsed['before'] = array_shift($arguments);
-        }
-        $parsed['pattern'] = array_shift($arguments);
-        if (count($arguments) == 2) {
-            if (substr_count($arguments[1], '@') == 1) {
-                $parsed['after'] = array_pop($arguments);
-            } else {
-                $parsed['name'] = array_pop($arguments);
-            }
-        }
-        if (count($arguments) == 3) {
-            $parsed['after'] = array_pop($arguments);
-            $parsed['name'] = array_pop($arguments);
-        }
-        $parsed['callback'] = $arguments[0];
-        $this->patternNested($parsed);
-        $this->filtersGraft($parsed);
-        return $parsed;
-    }
-
-    private function patternNested (Array &$arguments) {
-        if (!is_array($arguments['callback'])) {
-            return false;
-        }
-        $arguments['group'] = [];
-        $this->patternNestedCallback($arguments, $arguments['pattern'], $arguments['callback']);
-        return true;
-    }
-
-    private function patternNestedCallback (Array &$arguments, $prefix, Array $group) {
-        foreach ($group as $pattern => $callback) {
-            if (is_string($callback)) {
-                $arguments['group'][] = [
-                    'pattern' => $prefix . $pattern,
-                    'callback' => $callback
-                ];
-            } elseif (is_array($callback)) {
-                $this->patternNestedCallback($arguments, $prefix . $pattern, $callback);
-            }
-        }
-    }
-
-    private function filtersGraft (Array &$arguments) {
-        $prefix = $suffix = '';
-        if ($arguments['before'] !== false) {
-            $prefix = str_replace('@', 'BBBB', $arguments['before']) . 'bbbb';
-        }
-        if ($arguments['after'] !== false) {
-            $suffix = 'AAAA' . str_replace('@', 'aaaa', $arguments['after']);
-        }
-        if ($prefix == '' && $suffix == '') {
+    private function filtersGraft (&$callback, Array &$options=[]) {
+        if (empty($options['before']) && empty($options['after'])) {
             return;
         }
-        if (is_string($arguments['callback'])) {
-            $arguments['callback'] = $prefix . $arguments['callback'] . $suffix;
+        $prefix = $suffix = '';
+        if (!empty($options['before'])) {
+            $prefix = str_replace('@', 'BBBB', $options['before']) . 'bbbb';
         }
-        if (is_array($arguments['group'])) {
-            foreach ($arguments['group'] as &$group) {
-                $group['callback'] = $prefix . $group['callback'] . $suffix;
-            }
+        if (!empty($options['after'])) {
+            $suffix = 'AAAA' . str_replace('@', 'aaaa', $options['after']);
         }
+        $callback = $prefix . $callback . $suffix;
     }
 
-    public function get ($pattern, $callback) {
-        $arguments = $this->variableMethodArgs(func_get_args());
-        $this->method('GET', $arguments);
+    public function get ($pattern, $callback, Array $options=[]) {
+        $this->method('GET', $pattern, $callback, $options);
         return $this;
     }
 
-    public function post ($pattern, $callback) {
-        $arguments = $this->variableMethodArgs(func_get_args());
-        $this->method('POST', $arguments);
+    public function post ($pattern, $callback, Array $options=[]) {
+        $this->method('POST', $pattern, $callback, $options);
         return $this;
     }
 
-    public function delete ($pattern, $callback) {
-        $arguments = $this->variableMethodArgs(func_get_args());
-        $this->method('DELETE', $arguments);
+    public function delete ($pattern, $callback, Array $options=[]) {
+        $this->method('DELETE', $pattern, $callback, $options);
         return $this;
     }
 
-    public function patch ($pattern, $callback) {
-        $arguments = $this->variableMethodArgs(func_get_args());
-        $this->method('PATCH', $arguments);
+    public function patch ($pattern, $callback, Array $options=[]) {
+        $this->method('PATCH', $pattern, $callback, $options);
         return $this;
     }
 
-    public function put ($pattern, $callback) {
-        $arguments = $this->variableMethodArgs(func_get_args());
-        $this->method('PUT', $arguments);
+    public function put ($pattern, $callback, Array $options=[]) {
+        $this->method('PUT', $pattern, $callback, $options);
         return $this;
     }
 
@@ -241,51 +183,37 @@ class Service implements RouteInterface {
         return $this->knownRoutes;
     }
 
-    private function method ($method, $arguments) {
-        if (is_string($arguments['callback'])) {
-            $this->knownRoutes[$method][$arguments['pattern']] = $arguments['callback'];
+    public function method ($method, $pattern, $callback, Array $options=[]) {
+        $this->filtersGraft($callback, $options);
+        if (!is_string($callback)) {
+            throw new Exception('Callback should be a string');
         }
-        if ($arguments['group'] == false) {
-            $this->stringToCallback($arguments['callback']);
-            try {
-                $this->collector->addRoute($method, $arguments['pattern'], $arguments['callback']);
-            } catch (BadRouteException $e) {
-                if (!$this->testMode) {
-                    throw $e;
-                }
+        $this->knownRoutes[$method][$pattern] = $callback;
+        $this->stringToCallback($callback);
+        try {
+            $this->collector->addRoute($method, $pattern, $callback);
+        } catch (BadRouteException $e) {
+            if (!$this->testMode) {
+                throw $e;
             }
-            if (!empty($arguments['name'])) {
-                $this->namedRoutes[$arguments['name']] = $arguments['callback'];
-            }
-            return;
         }
-        foreach ($arguments['group'] as $group) {
-            $this->knownRoutes[$method][$group['pattern']] = $group['callback'];
-            $this->stringToCallback($group['callback']);
-            try {
-                $this->collector->addRoute($method, $group['pattern'], $group['callback']);
-            } catch (BadRouteException $e) {
-                if (!$this->testMode) {
-                    throw $e;
-                }
-            }
+        if (!empty($options['name'])) {
+            $this->namedRoutes[$options['name']] = $callback;
         }
     }
 
     private function dispatcher () {
-        if (empty($this->dispatcher)) {
-            if (is_array($this->cache) == true) {
-                $this->dispatcher = new GroupCountBased($this->cache);
-            } else {
-                if (file_exists($this->cachePath)) {
-                    $data = require $this->cachePath;
-                    $this->dispatcher = new GroupCountBased($data);
-                } else {
-                    $this->dispatcher = new GroupCountBased($this->collector->getData());
-                }
-            }
+        if (!empty($this->dispatcher)) {
+            return $this->dispatcher;
         }
-        return $this->dispatcher;
+        if (is_array($this->cache) == true) {
+            return new RouteDispatcher($this->cache);
+        }
+        if (file_exists($this->cachePath)) {
+            $data = require $this->cachePath;
+            return new RouteDispatcher($data);
+        }
+        return new RouteDispatcher($this->collector->getData());
     }
 
     private function filterParse (Array &$callable, &$beforeActions=[], &$afterActions=[]) {
@@ -507,13 +435,24 @@ class Service implements RouteInterface {
     }
 
     public function serviceMethod ($compositeName) {
+        $optional = false;
         if (substr_count($compositeName, '@') != 1) {
             throw new RouteException('invalid service name: ' . $compositeName . ': must container 1 "@" symbol');
         }
         list($serviceName, $methodName) = explode('@', $compositeName);
+        if (substr($methodName, 0, 1) == '?') {
+            $methodName = substr($methodName, 1);
+            $optional = true;
+        }
         $service = $this->container->get($serviceName);
+        if ($optional === true && $service === FALSE) {
+            return false;
+        }
         if ($service === FALSE) {
             throw new Exception('Service: ' . $serviceName . ': Not available in container. Check spelling or project build status.');
+        }
+        if ($optional === true && !method_exists($service, $methodName)) {
+            return false;
         }
         $args = func_get_args();
         array_shift($args);

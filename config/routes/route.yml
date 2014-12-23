@@ -1,0 +1,19 @@
+routes:
+    GET:
+        /sample:                            controller@sampleOutput
+        /api/add:                           controller@sampleOutput
+        /api/edit:                          controller@sampleOutput
+        /api/list:                          controller@sampleOutput
+        /api/upload:                        controller@sampleOutput
+        /api/upload/file:                   controller@sampleOutput
+        /api/upload/file/{name}:            controller@sampleOutput2
+        /api2/add:                          [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/edit:                         [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/list:                         [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload:                       [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload/file:                  [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload/file/{name}:           [controller@sampleOutput2, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /sample2:                           [controller@sampleOutput, {name: Sample}]
+        /sample3/{name}:                    [controller@sampleOutput2, {name: SampleParam}]
+        /sample3/{name}/{age}/{location}:   [controller@sampleOutput3, {name: SampleParamAssoc}]
+        /redirect:                          controller@sampleRedirect

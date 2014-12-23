@@ -1,0 +1,14 @@
+{
+    "default": {
+        "db": {
+            "name": "phpunit",
+            "conn": "mongodb:\/\/unit:test@localhost\/phpunit"
+        }
+    },
+    "routes": {
+        "db": {
+            "name": "phpunit",
+            "conn": "mongodb:\/\/unit:test@localhost\/phpunit"
+        }
+    }
+}

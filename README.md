@@ -12,94 +12,56 @@ Service wrapper for FastRoute providing a more slim-like interface.
 
 ## Background
 
-I love [Slim Framework](http://www.slimframework.com), but it is not as slim (or fast) as I'd like it to be.
+[FastRoute](https://github.com/nikic/FastRoute) is an extremely fast PHP routing library.
 
-[FastRoute](https://github.com/nikic/FastRoute), is exactly what I need in a router, but I prefer the Slim API.
+Opine\Route is a service wrapper that makes it easy to define routes via a YAML file, cache routes and execute them.
 
-Opine\Route is a service wrapper for FastRoute which with a more Slim-like interface.  So here is the fastest router with the most popular API.  Enjoy!
-
-## With Dependency Injection
-> index.php
-
-```php
-$route = $container->route;
-
-$route->get('/', function () {
-    echo 'Home';
-})->get('/about', function () {
-    echo 'About';
-})->get('/blog', function () {
-    echo 'Blog';
-})->post('/form', function () {
-    echo 'Received';
-});
-
-echo $route->run('GET', '/');
-```
-
-> container.yml
+## Route Sample
 
 ```yaml
-services:
-    route:
-        class:     'Opine\Route'
-        arguments: ['@fastrouteCollector']
-    fastrouteCollector:
-        class:     'FastRoute\RouteCollector'
-        arguments: ['@fastrouteParser', '@fastrouteGenerator']
-    fastrouteParser:
-        class:     'FastRoute\RouteParser\Std'
-    fastrouteGenerator:
-        class:     'FastRoute\DataGenerator\GroupCountBased'
+routes:
+    GET:
+        /sample:                            controller@sampleOutput
+        /api/add:                           controller@sampleOutput
+        /api/edit:                          controller@sampleOutput
+        /api/list:                          controller@sampleOutput
+        /api/upload:                        controller@sampleOutput
+        /api/upload/file:                   controller@sampleOutput
+        /api/upload/file/{name}:            controller@sampleOutput2
+        /api2/add:                          [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/edit:                         [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/list:                         [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload:                       [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload/file:                  [controller@sampleOutput, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /api2/upload/file/{name}:           [controller@sampleOutput2, {before: controller@beforeFilter, after: controller@afterFilter}]
+        /sample2:                           [controller@sampleOutput, {name: Sample}]
+        /sample3/{name}:                    [controller@sampleOutput2, {name: SampleParam}]
+        /sample3/{name}/{age}/{location}:   [controller@sampleOutput3, {name: SampleParamAssoc}]
+        /redirect:                          controller@sampleRedirect
 ```
 
-## Without Dependency Injection
-> index.php
+## Load / Execute Routes
 
 ```php
-use Opine;
-use FastRoute;
-
-$route = new Route(new RouteCollector(new RouteParser\Std(), new DataGenerator\GroupCountBased()));
-
-$route->get('/', function () {
-    echo 'Home';
-})->get('/about', function () {
-    echo 'About';
-})->get('/blog', function () {
-    echo 'Blog';
-})->post('/form', function () {
-    echo 'Received';
-});
-
-echo $route->run('GET', '/');
+$routeFile = '/var/www/project/config/routes/route.yml';
+$containerFile = '/var/www/project/config/containers/container.yml';
+$webroot = '/var/www/project/public';
+$config = new \Opine\Config\Service($webroot);
+$config->cacheSet();
+$container = \Opine\Container\Service::instance($webroot, $config, $containerFile);
+$routeService = new Opine\Route\Service($webroot, $container);
+$routeModel = new Opine\Route\Model($webroot, $routeService);
+$routeModel->yaml($routeFile);
+$response = $this->route->run('GET', '/sample');
+var_dump($response);
 ```
 
-## Currently, the following methods are defined:
-- **get**: add a pattern/callback to route for get method
-- **post**: add a pattern/callback to route for post method
-- **put**: add a pattern/callback to route for put method
-- **delete**: add a pattern/callback to route for delete method
-- **patch**: add a pattern/callback to route for patch method
-- **before**: add a before filter
-- **after**: add an after filter
-- **purgeAfter**: get rid of after filters
-- **purgeBefore**: get rid of before filters
-- **run**: dispatch against current URI or supply one
 
 ## Installation
-> edit composer.json
-
-```json
-{
-    "require": {
-        "opine/route": "dev-master"
-    }
-}
+```sh
+composer require "opine/route:dev-master"
+composer install
 ```
-
-> composer install
-
 
 ## Author
 
