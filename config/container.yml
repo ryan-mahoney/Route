@@ -1,6 +1,6 @@
 imports:
     - package-container.yml
-    - ../../bundle/config/package-container.yml
+    - ../vendor/opine/bundle/config/package-container.yml
 
 services:
     controller:
