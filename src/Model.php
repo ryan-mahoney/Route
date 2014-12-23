@@ -41,7 +41,7 @@ class Model {
         if ($routes === FALSE) {
             $routes = [];
         }
-        $this->bundleRoutes();
+        $this->bundleRoutes($routes);
         foreach ($routes as $route) {
             $this->yaml($route);
         }
