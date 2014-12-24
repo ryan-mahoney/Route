@@ -1,42 +1,54 @@
 <?php
-class Controller {
-	private $redirect;
+class Controller
+{
+    private $redirect;
 
-	public function __construct ($redirect) {
-		$this->redirect = $redirect;
-	}
+    public function __construct($redirect)
+    {
+        $this->redirect = $redirect;
+    }
 
-	public function sampleRedirect () {
+    public function sampleRedirect()
+    {
         return $this->redirect->action('controller@sampleOutput4');
     }
 
-    public function sampleOutput () {
+    public function sampleOutput()
+    {
         echo 'SAMPLE';
     }
 
-    public function sampleOutput2 ($data) {
-        echo 'SAMPLE' . $data;
+    public function sampleOutput2($data)
+    {
+        echo 'SAMPLE'.$data;
     }
 
-    public function sampleOutput3 ($name, $age, $location) {
-        echo 'Name: ' . $name . ' Age: ' . $age . ' Location: ' . $location;
+    public function sampleOutput3($name, $age, $location)
+    {
+        echo 'Name: '.$name.' Age: '.$age.' Location: '.$location;
     }
 
-    public function sampleOutput4 () {
+    public function sampleOutput4()
+    {
         echo 'From Redirect';
     }
 
-    public function beforeFilter () {
+    public function beforeFilter()
+    {
         echo 'START';
+
         return true;
     }
 
-    public function afterFilter () {
+    public function afterFilter()
+    {
         echo 'END';
+
         return true;
     }
 
-    public function check ($letter) {
-        return 'success: ' . $letter;
+    public function check($letter)
+    {
+        return 'success: '.$letter;
     }
 }
