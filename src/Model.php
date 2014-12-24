@@ -77,7 +77,13 @@ class Model
         } catch (Exception $e) {
             throw new Exception('Can not parse file: '.$file.', '.$e->getMessage());
         }
-        foreach ($routes['routes'] as $method => $paths) {
+        if (empty($routes['route'])) {
+            return;
+        }
+        if (!isset($routes['route'])) {
+            throw new Exception('Invalid route file: '.$file);
+        }
+        foreach ($routes['route'] as $method => $paths) {
             $this->paths($method, $paths);
         }
     }
