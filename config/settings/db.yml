@@ -1,0 +1,3 @@
+settings:
+    name: phpunit
+    conn: mongodb://unit:test@localhost/phpunit
