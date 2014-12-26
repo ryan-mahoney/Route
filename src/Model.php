@@ -70,9 +70,6 @@ class Model
     public function yaml($file)
     {
         try {
-            if (function_exists('yaml_parse_file')) {
-                $routes = yaml_parse_file($file);
-            }
             $routes = Yaml::parse(file_get_contents($file));
         } catch (Exception $e) {
             throw new Exception('Can not parse file: '.$file.', '.$e->getMessage());
