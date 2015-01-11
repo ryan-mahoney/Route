@@ -20,7 +20,7 @@ Opine\Route is a service wrapper that makes it easy to define routes via a YAML 
 ## Route Sample
 
 ```yaml
-routes:
+route:
     GET:
         /sample:                            controller@sampleOutput
         /api/add:                           controller@sampleOutput
