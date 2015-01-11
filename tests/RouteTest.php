@@ -24,7 +24,7 @@ class RouteTest extends PHPUnit_Framework_TestCase
     private function initializeRoutes()
     {
         $this->routeModel->build();
-        //$this->routeModel->yaml(__DIR__ . '/routes.yml');
+        $this->route->cacheGenerate();
     }
 
     public function testRouteWithStringController()

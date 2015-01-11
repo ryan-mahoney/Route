@@ -1,4 +1,4 @@
-routes:
+route:
     GET:
         /sample:                            controller@sampleOutput
         /api/add:                           controller@sampleOutput
