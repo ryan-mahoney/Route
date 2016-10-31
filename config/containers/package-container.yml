@@ -3,15 +3,15 @@ services:
         class: Opine\Route\Service
         arguments:
             - %root%
-            - @container
+            - "@container"
     routeModel:
         class: Opine\Route\Model
         arguments:
             - %root%
-            - @route
-            - @bundleModel
+            - "@route"
+            - "@bundleModel"
     redirect:
         class: Opine\Route\Redirect
         scope: prototype
         arguments:
-            - @route
+            - "@route"

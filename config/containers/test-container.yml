@@ -6,4 +6,4 @@ services:
     controller:
         class: Controller
         arguments:
-            - @redirect
+            - "@redirect"
