@@ -31,6 +31,5 @@
         "psr-4": {
             "Opine\\Route\\": "src/"
         }
-    },
-    "version": "3.0.12"
+    }
 }
