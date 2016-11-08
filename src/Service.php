@@ -118,7 +118,7 @@ class Service implements RouteInterface
         return $this;
     }
 
-    private function actionPrepare($callback)
+    private function actionPrepare(string $callback)
     {
         $this->stringToCallback($callback);
         $this->arrayToService($callback);
@@ -186,11 +186,7 @@ class Service implements RouteInterface
         if (!is_string($callback)) {
             return;
         }
-        if (substr_count($callback, '@') == 1) {
-            $callback = explode('@', $callback);
-        } else {
-            throw new \Opine\Route\Exception('Invalid callback: '.$callback);
-        }
+        $callback = explode('@', $callback, 2);
     }
 
     private function arrayToService(&$callback)
@@ -248,15 +244,18 @@ class Service implements RouteInterface
 
     private function filterParse(Array &$callable, &$beforeActions = [], &$afterActions = [], &$activity)
     {
-        $parts = explode('|', $callable);
-        $options = json_decode($parts[1]);
-        $callable = $parts[0];
+        if (substr_count($callable[1], '|') == 0) {
+            return;
+        }
+        $parts = explode('|', $callable[1]);
+        $options = json_decode($parts[1], true);
+        $callable = [$callable[0], $parts[0]];
 
         if (isset($options['before'])) {
-            $beforeActions[] = $options['before'];
+            $beforeActions[] = $this->actionPrepare($options['before']);
         }
         if (isset($options['after'])) {
-            $afterActions[] = $options['after'];
+            $afterActions[] = $this->actionPrepare($options['after']);
         }
         if (isset($options['activity'])) {
             $activity = $options['activity'];
@@ -293,7 +292,24 @@ class Service implements RouteInterface
     {
         $beforeActions = array_merge($this->before, $beforeActionsIn);
         $afterActions = array_merge($this->after, $afterActionsIn);
-        $this->filterParse($callable, $beforeActions, $afterActions);
+        $activity = null;
+        $this->filterParse($callable, $beforeActions, $afterActions, $activity);
+
+        // handle activity
+        if (!empty($activity)) {
+            $userService = $this->container->get('userService');
+            $authorized = $userService->checkActivity($activity);
+            if (!$authorized['authorized']) {
+                $redirect = '/';
+                if (!empty($authorized['redirect'])) {
+                    $redirect = $authorized['redirect'];
+                }
+                http_response_code(302);
+                header('Location: '. $redirect);
+                return false;
+            }
+        }
+
         foreach ($beforeActions as $before) {
             if (!is_object($before[0])) {
                 $before[0] = new $before[0]();
@@ -384,7 +400,8 @@ class Service implements RouteInterface
         $beforeActions = [];
         $afterActions = [];
         $action = $this->namedRoutes[$name];
-        $this->filterParse($action, $beforeActions, $afterActions);
+        $activity = null;
+        $this->filterParse($action, $beforeActions, $afterActions, $activity);
         if (count($parameters) == 0) {
             $this->execute($action, $parameters, $beforeActions, $afterActions);
         } else {

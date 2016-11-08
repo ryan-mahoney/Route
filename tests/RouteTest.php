@@ -29,8 +29,8 @@ class RouteTest extends PHPUnit_Framework_TestCase
 
     public function testRouteWithStringController()
     {
-        $header = '';
         $this->initializeRoutes();
+        $header = '';
         $response = $this->route->run('GET', '/sample', $header);
         $this->assertTrue($response == 'SAMPLE' && $header == 200);
     }
