@@ -142,17 +142,8 @@ class Service implements RouteInterface
 
     private function filtersGraft(&$callback, Array &$options = [])
     {
-        if (empty($options['before']) && empty($options['after'])) {
-            return;
-        }
-        $prefix = $suffix = '';
-        if (!empty($options['before'])) {
-            $prefix = str_replace('@', 'BBBB', $options['before']).'bbbb';
-        }
-        if (!empty($options['after'])) {
-            $suffix = 'AAAA'.str_replace('@', 'aaaa', $options['after']);
-        }
-        $callback = $prefix.$callback.$suffix;
+        $suffix = '|' . json_encode($options);
+        $callback = $callback.$suffix;
     }
 
     public function get($pattern, $callback, Array $options = [])
@@ -255,18 +246,20 @@ class Service implements RouteInterface
         return new RouteDispatcher($this->collector->getData());
     }
 
-    private function filterParse(Array &$callable, &$beforeActions = [], &$afterActions = [])
+    private function filterParse(Array &$callable, &$beforeActions = [], &$afterActions = [], &$activity)
     {
-        //[ClassBBBBmethodbbbbClass, methodAAAAClassaaaamethod]
-        if (substr_count($callable[0], 'BBBB') == 1 && substr_count($callable[0], 'bbbb') == 1) {
-            $parts = preg_split('/(BBBB|bbbb)/', $callable[0]);
-            $callable[0] = $parts[2];
-            $beforeActions[] = $this->actionPrepare([$parts[0], $parts[1]]);
+        $parts = explode('|', $callable);
+        $options = json_decode($parts[1]);
+        $callable = $parts[0];
+
+        if (isset($options['before'])) {
+            $beforeActions[] = $options['before'];
         }
-        if (substr_count($callable[1], 'AAAA') == 1 && substr_count($callable[1], 'aaaa') == 1) {
-            $parts = preg_split('/(AAAA|aaaa)/', $callable[1]);
-            $callable[1] = $parts[0];
-            $afterActions[] = $this->actionPrepare([$parts[1], $parts[2]]);
+        if (isset($options['after'])) {
+            $afterActions[] = $options['after'];
+        }
+        if (isset($options['activity'])) {
+            $activity = $options['activity'];
         }
     }
 

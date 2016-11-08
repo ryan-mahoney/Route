@@ -19,10 +19,10 @@
     "require": {
         "php"             : ">=7.0.0",
         "nikic/fast-route": "1.0.1",
-        "opine/interfaces": "~1.0",
-        "opine/config"    : "~3.0",
-        "opine/container" : "~2.0",
-        "opine/bundle"    : "~2.0"
+        "opine/interfaces": "^1.0",
+        "opine/config"    : "^3.0",
+        "opine/container" : "^2.0",
+        "opine/bundle"    : "^2.0.17"
     },
     "require-dev": {
         "phpunit/phpunit": "5.5.0"
