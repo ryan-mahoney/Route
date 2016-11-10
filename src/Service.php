@@ -339,6 +339,19 @@ class Service implements RouteInterface
         return;
     }
 
+    private function getJsonInput () : array
+    {
+        $input = file_get_contents('php://input');
+        if ($input === false || $input == '') {
+            return [];
+        }
+        $input = json_decode($input, true);
+        if (json_last_error() == JSON_ERROR_NONE) {
+            return [];
+        }
+        return $json;
+    }
+
     public function run($method = false, $path = false, &$code = false)
     {
         $originalGet = $_GET;
@@ -364,7 +377,8 @@ class Service implements RouteInterface
                 try {
                     http_response_code(200);
                     ob_start();
-                    $response = $this->execute($route[1], $route[2]);
+                    $input = array_unshift($route[2], $this->getJsonInput());
+                    $response = $this->execute($route[1], $input);
                     if ($response === false) {
                         $output = false;
                     } else {
