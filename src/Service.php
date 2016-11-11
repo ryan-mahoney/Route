@@ -347,9 +347,9 @@ class Service implements RouteInterface
         }
         $input = json_decode($input, true);
         if (json_last_error() == JSON_ERROR_NONE) {
-            return [];
+            return $input;
         }
-        return $json;
+        return [];
     }
 
     public function run($method = false, $path = false, &$code = false)
@@ -377,8 +377,8 @@ class Service implements RouteInterface
                 try {
                     http_response_code(200);
                     ob_start();
-                    $input = array_unshift($route[2], $this->getJsonInput());
-                    $response = $this->execute($route[1], $input);
+                    array_unshift($route[2], $this->getJsonInput());
+                    $response = $this->execute($route[1], $route[2]);
                     if ($response === false) {
                         $output = false;
                     } else {
