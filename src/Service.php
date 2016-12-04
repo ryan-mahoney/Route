@@ -277,8 +277,8 @@ class Service implements RouteInterface
             if (substr_count($path, '?') > 0) {
                 $parts = explode('?', $path, 2);
                 parse_str($parts[1], $_GET);
-                $this->queryString = $parts[1];
                 $this->path = $parts[0];
+                $this->queryString = $parts[1];
                 $getModified = true;
             }
         }
@@ -296,20 +296,28 @@ class Service implements RouteInterface
         $this->filterParse($callable, $beforeActions, $afterActions, $activity);
 
         // handle activity
+        $authorized = ['authorized' => true];
         if (!empty($activity)) {
             $userService = $this->container->get('userService');
             $authorized = $userService->checkActivity($activity);
-            if (!$authorized['authorized']) {
-                $redirect = '/';
-                if (!empty($authorized['redirect'])) {
-                    $redirect = $authorized['redirect'];
-                }
-                http_response_code(302);
-                header('Location: '. $redirect);
-                return false;
+        }
+        if (!$authorized['authorized']) {
+            // determine redirect
+            $redirect = '/';
+            if (!empty($authorized['redirect'])) {
+                $redirect = $authorized['redirect'];
             }
+            header('X-Location: /authorization');
+            $this->response(json_encode([
+                'authorization' => [
+                    'location' => $this->path . '?' . $this->queryString,
+                    'redirect' => $redirect
+                ]
+            ]));
+            return;
         }
 
+        // call each before action
         foreach ($beforeActions as $before) {
             if (!is_object($before[0])) {
                 $before[0] = new $before[0]();
@@ -326,6 +334,8 @@ class Service implements RouteInterface
         if ($this->response(call_user_func_array($callable, $parameters)) === false) {
             return;
         }
+
+        // call each after action
         foreach ($afterActions as $after) {
             if (!is_object($after[0])) {
                 $after[0] = new $after[0]();
@@ -335,8 +345,6 @@ class Service implements RouteInterface
             }
         }
         $this->purgeAfter();
-
-        return;
     }
 
     private function getJsonInput () : array
