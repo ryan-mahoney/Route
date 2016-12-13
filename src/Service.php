@@ -385,8 +385,8 @@ class Service implements RouteInterface
                 try {
                     http_response_code(200);
                     ob_start();
-                    array_unshift($route[2], $this->getJsonInput());
-                    $response = $this->execute($route[1], $route[2]);
+                    $input = [$this->getJsonInput(), $route[2]];
+                    $response = $this->execute($route[1], $input);
                     if ($response === false) {
                         $output = false;
                     } else {
